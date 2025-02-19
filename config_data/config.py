@@ -19,9 +19,21 @@ class DB:
 
 
 @dataclass
+class Payment:
+    api_key: str
+
+
+@dataclass
+class NatsConfig:
+    servers: list[str]
+
+
+@dataclass
 class Config:
     bot: tg_bot
     db: DB
+    payment: Payment
+    nats: NatsConfig
 
 
 def load_config(path: str | None = None) -> Config:
@@ -35,5 +47,11 @@ def load_config(path: str | None = None) -> Config:
             ),
         db=DB(
             dns=env('dns')
+        ),
+        payment=Payment(
+            api_key=env('payment_key')
+        ),
+        nats=NatsConfig(
+            servers=env.list('nats')
         )
     )
