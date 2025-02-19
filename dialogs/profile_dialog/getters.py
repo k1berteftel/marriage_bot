@@ -12,7 +12,8 @@ from states.state_groups import startSG
 config: Config = load_config()
 
 
-async def start_getter(event_from_user: User, **kwargs):
+async def start_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs):
+    dialog_manager.middleware_data['locale'] = 'rus'
     admin = False
     if event_from_user.id in config.bot.admin_ids:
         admin = True

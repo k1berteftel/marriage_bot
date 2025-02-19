@@ -8,9 +8,9 @@ from dialogs.user_dialog.getters import start_getter
 
 from states.state_groups import startSG, adminSG
 
-start_dialog = Dialog(
+user_dialog = Dialog(
     Window(
-        Const('Приветственный текст'),
+        Format('{text}'),
         Column(
             Start(Const('Админ панель'), id='admin', state=adminSG.start, when='admin')
         ),
