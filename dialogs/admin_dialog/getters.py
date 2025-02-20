@@ -687,6 +687,8 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
     }
     activity = 0
     vips = 0
+    men = 0
+    women = 0
     for user in users:
         if user.active:
             active += 1
@@ -702,6 +704,15 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             activity += 1
         if user.vip and user.vip_end:
             vips += 1
+        form = await session.get_form(user.user_id)
+        if form:
+            translator: Translator = create_translator(user.locale if user.locale else 'ru')
+            if form.male == translator['men_button']:
+                men += 1
+            if form.male == translator['women_button']:
+                women += 1
+
+
 
     sum = 0
     today_sum = 0
@@ -719,7 +730,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - За вчерашний день: +{entry.get("yesterday")}'
             f'\n - Позавчера: + {entry.get("2_day_ago")}\n\n<b>Покупки:</b>\n - Людей купил vip: {vips}\n'
             f' - Сумма пополнений за сегодня: {today_sum}\n - Сумма пополнений за все время: {sum}\n\n'
-            f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}')
+            f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}\n - Мужских анкет: {men}\n - Женских: {women}')
     await clb.message.answer(text=text)
 
 
@@ -728,7 +739,7 @@ async def deeplink_menu_getter(dialog_manager: DialogManager, **kwargs):
     links: list[DeeplinksTable] = await session.get_deeplinks()
     text = ''
     for link in links:
-        text += f'https://t.me/test12repe9_bot?start={link.link}: {link.entry}\n'  # Получить ссылку на бота и поменять
+        text += f'https://t.me/SR_znakomstva_bot?start={link.link}: {link.entry}\n'  # Получить ссылку на бота и поменять
     return {'links': text}
 
 
@@ -932,8 +943,8 @@ async def change_button_link(msg: Message, widget: ManagedTextInput, dialog_mana
 
 async def op_menu_getter(dialog_manager: DialogManager, **kwargs):
     session: DataInteraction = dialog_manager.middleware_data.get('session')
-    channel_link = f't.me/Origandtocha_bot?startchannel=works&admin={invite_params}'
-    chat_link = f't.me/Origandtocha_bot?startgroup=works&admin={invite_params}'
+    channel_link = f't.me/SR_znakomstva_bot?startchannel=works&admin={invite_params}'
+    chat_link = f't.me/SR_znakomstva_bot?startgroup=works&admin={invite_params}'
     categories = await session.get_op()
     text = ''
     buttons = []

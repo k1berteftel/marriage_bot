@@ -26,7 +26,7 @@ profile_dialog = Dialog(
     Window(
         Format('{text}'),
         Column(
-            Url(Format('{share}'), url=Format('http://t.me/share/url?url=https://t.me/Origandtocha_bot?start={user_id}')),
+            Url(Format('{share}'), url=Format('http://t.me/share/url?url=https://t.me/SR_znakomstva_bot?start={user_id}')),
             SwitchTo(Format('{ref_static}'), id='ref_static_switcher', state=profileSG.ref_static)
         ),
         SwitchTo(Format('{back}'), id='back', state=profileSG.start),

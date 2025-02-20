@@ -1,5 +1,5 @@
 from aiogram import Router, F, Bot
-from aiogram.filters import CommandStart, CommandObject, and_f, StateFilter
+from aiogram.filters import CommandStart, CommandObject, and_f, StateFilter, Command
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram_dialog import DialogManager, StartMode
 from aiogram.fsm.context import FSMContext
@@ -192,6 +192,27 @@ async def start_favorites_dialog(msg: Message, dialog_manager: DialogManager, se
 
 
 @user_router.message(StartDialogFilter('help_button'))
+async def start_help_dialog(msg: Message, dialog_manager: DialogManager, session: DataInteraction, translator: Translator, scheduler: AsyncIOScheduler):
+    job = scheduler.get_job(job_id=f'payment_{msg.from_user.id}')
+    if job:
+        job.remove()
+    if not await session.check_form(msg.from_user.id):
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text=translator['registration_button'], callback_data='registration')]]
+        )
+        await msg.answer(translator['no_form_warning'], reply_markup=keyboard)
+        return
+    await msg.delete()
+    if dialog_manager.has_context():
+        await dialog_manager.done()
+        try:
+            await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=msg.message_id - 1)
+        except Exception:
+            ...
+    await dialog_manager.start(states.helpSG.start, mode=StartMode.RESET_STACK)
+
+
+@user_router.message(Command('help'))
 async def start_help_dialog(msg: Message, dialog_manager: DialogManager, session: DataInteraction, translator: Translator, scheduler: AsyncIOScheduler):
     job = scheduler.get_job(job_id=f'payment_{msg.from_user.id}')
     if job:

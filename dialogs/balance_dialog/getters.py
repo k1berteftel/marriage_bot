@@ -200,7 +200,7 @@ async def card_pay_getter(event_from_user: User, dialog_manager: DialogManager, 
         },
         "confirmation": {
             "type": "redirect",
-            "return_url": "https://t.me/Origandtocha_bot"
+            "return_url": "https://t.me/SR_znakomstva_bot"
         },
         "receipt": {
             "customer": {
