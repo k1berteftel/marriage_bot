@@ -508,6 +508,8 @@ async def get_leave_getter(dialog_manager: DialogManager, **kwargs):
     translator: Translator = dialog_manager.middleware_data.get('translator')
     return {
         'text': translator['add_leave'],
+        'yes': translator['add_leave_yes_button'],
+        'no': translator['add_leave_no_button'],
         'back': translator['back']
     }
 
