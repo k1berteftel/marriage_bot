@@ -24,7 +24,7 @@ def create_translator(locale: str) -> Translator:
             texts.update(lang)
             break
     if not texts:
-        return Translator(get_languages()[list(get_languages()[0].keys())[0]])
+        return Translator(get_languages()[0][list(get_languages()[0].keys())[0]])
     key = list(texts.keys())[0]
     translator = Translator(texts[key])
     translator._set_lang(list(texts.keys())[0])
