@@ -706,12 +706,12 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
         if user.vip and user.vip_end:
             vips += 1
         form = await session.get_form(user.user_id)
-        #if form:
-            #translator: Translator = create_translator(user.locale if user.locale else 'ru')
-            #if form.male == translator['men_button']:
-                #men += 1
-            #if form.male == translator['women_button']:
-                #women += 1
+        if form:
+            translator: Translator = create_translator(user.locale if user.locale else 'ru')
+            if form.male == translator['men_button']:
+                men += 1
+            if form.male == translator['women_button']:
+                women += 1
 
     sum = 0
     today_sum = 0
@@ -729,7 +729,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - За вчерашний день: +{entry.get("yesterday")}'
             f'\n - Позавчера: + {entry.get("2_day_ago")}\n\n<b>Покупки:</b>\n - Людей купил vip: {vips}\n'
             f' - Сумма пополнений за сегодня: {today_sum}\n - Сумма пополнений за все время: {sum}\n\n'
-            f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}')  # \n - Мужских анкет: {men}\n - Женских: {women} # потом подставить
+            f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}\n - Мужских анкет: {men}\n - Женских: {women}')
     await clb.message.answer(text=text)
 
 
