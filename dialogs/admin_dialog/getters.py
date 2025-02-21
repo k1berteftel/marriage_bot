@@ -706,12 +706,12 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
         if user.vip and user.vip_end:
             vips += 1
         form = await session.get_form(user.user_id)
-        if form:
-            translator: Translator = create_translator(user.locale if user.locale else 'ru')
-            if form.male == translator['men_button']:
-                men += 1
-            if form.male == translator['women_button']:
-                women += 1
+        #if form:
+            #translator: Translator = create_translator(user.locale if user.locale else 'ru')
+            #if form.male == translator['men_button']:
+                #men += 1
+            #if form.male == translator['women_button']:
+                #women += 1
 
     sum = 0
     today_sum = 0
