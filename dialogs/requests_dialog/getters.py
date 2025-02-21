@@ -72,7 +72,7 @@ async def my_requests_getter(event_from_user: User, dialog_manager: DialogManage
                 vip='✅' if user.vip else '❌'
             )
         if form.photos:
-            photo = MediaId(file_id=form.photos.split(' ')[0])
+            photo = MediaId(file_id=form.photos[0])
             media = MediaAttachment(file_id=photo, type=ContentType.PHOTO)
     else:
         text = translator['no_my_requests']
@@ -193,7 +193,11 @@ async def confirm_alien_request(clb: CallbackQuery, widget: Button, dialog_manag
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[[InlineKeyboardButton(text=translator['get_contact_button'], callback_data=f'get_contact_{clb.from_user.id}')]]
         )
-        await clb.bot.send_message(text=translator['success_apply_request'].format(form=text), reply_markup=keyboard, chat_id=sender.user_id)
+        await clb.bot.send_photo(
+            photo=form.photos[0],
+            caption=translator['success_apply_request'].format(form=text),
+            reply_markup=keyboard,
+            chat_id=sender.user_id)
         message = await clb.message.answer(translator['success_men_send'])
         job_id = get_random_id()
         scheduler.add_job(
@@ -250,7 +254,7 @@ async def alien_requests_getter(event_from_user: User, dialog_manager: DialogMan
                 vip='✅' if user.vip else '❌'
             )
         if form.photos:
-            photo = MediaId(file_id=form.photos.split(' ')[0])
+            photo = MediaId(file_id=form.photos[0])
             media = MediaAttachment(file_id=photo, type=ContentType.PHOTO)
     else:
         text = translator['no_alien_requests']

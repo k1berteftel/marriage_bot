@@ -14,7 +14,8 @@ from utils.build_ids import get_random_id
 from utils.text_utils import get_age_text
 from utils.tables import get_table
 from utils.schedulers import send_messages
-from utils.translator.translator import Translator, create_translator
+from utils.translator import Translator as create_translator
+from utils.translator.translator import Translator
 from database.action_data_class import DataInteraction
 from database.model import DeeplinksTable, AdminsTable
 from config_data.config import load_config, Config
@@ -712,8 +713,6 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             if form.male == translator['women_button']:
                 women += 1
 
-
-
     sum = 0
     today_sum = 0
     for transaction in transactions:
@@ -730,7 +729,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - За вчерашний день: +{entry.get("yesterday")}'
             f'\n - Позавчера: + {entry.get("2_day_ago")}\n\n<b>Покупки:</b>\n - Людей купил vip: {vips}\n'
             f' - Сумма пополнений за сегодня: {today_sum}\n - Сумма пополнений за все время: {sum}\n\n'
-            f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}\n - Мужских анкет: {men}\n - Женских: {women}')
+            f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}')  # \n - Мужских анкет: {men}\n - Женских: {women} # потом подставить
     await clb.message.answer(text=text)
 
 
