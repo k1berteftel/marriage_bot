@@ -23,7 +23,10 @@ def create_translator(locale: str) -> Translator:
         if list(lang.keys())[0] == locale:
             texts.update(lang)
             break
-    return Translator(texts)
+    translator = Translator(texts)
+    translator._set_lang(list(texts.keys())[0])
+
+    return translator
 
 
 def recreate_locales(model_dict: dict, old_locale: str, new_locale: str) -> dict:
