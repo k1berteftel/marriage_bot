@@ -4,14 +4,14 @@ from dataclasses import dataclass
 @dataclass
 class Translator:
     _lang = 'ru'
-    texts: dict[str, dict]
+    texts: dict[str, str]
 
     def _set_lang(self, lang: str):
         self._lang = lang
 
     def __getitem__(self, item: str) -> str:
         try:
-            return self.texts[self._lang][item]
+            return self.texts[item]
         except IndexError as err:
             raise IndexError(f'{err}: there is no key "{item}"')
 
@@ -23,9 +23,10 @@ def create_translator(locale: str) -> Translator:
         if list(lang.keys())[0] == locale:
             texts.update(lang)
             break
+    key = list(texts.keys())[0]
     if not texts:
-        return Translator(list(get_languages()[0].keys())[0])
-    translator = Translator(texts)
+        return Translator(get_languages()[list(get_languages()[0].keys())[0]])
+    translator = Translator(texts[key])
     translator._set_lang(list(texts.keys())[0])
     return translator
 
