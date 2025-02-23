@@ -193,11 +193,17 @@ async def confirm_alien_request(clb: CallbackQuery, widget: Button, dialog_manag
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[[InlineKeyboardButton(text=translator['get_contact_button'], callback_data=f'get_contact_{clb.from_user.id}')]]
         )
-        await clb.bot.send_photo(
-            photo=form.photos[0],
-            caption=translator['success_apply_request'].format(form=text),
-            reply_markup=keyboard,
-            chat_id=sender.user_id)
+        if form.photos:
+            await clb.bot.send_photo(
+                photo=form.photos[0],
+                caption=translator['success_apply_request'].format(form=text),
+                reply_markup=keyboard,
+                chat_id=sender.user_id)
+        else:
+            await clb.bot.send_message(
+                text=translator['success_apply_request'].format(form=text),
+                reply_markup=keyboard,
+                chat_id=sender.user_id)
         message = await clb.message.answer(translator['success_men_send'])
         job_id = get_random_id()
         scheduler.add_job(
