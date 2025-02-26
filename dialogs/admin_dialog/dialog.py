@@ -15,6 +15,7 @@ admin_dialog = Dialog(
         SwitchTo(Const('Выдать вип'), id='set_vip_switcher', state=adminSG.set_vip),
         Button(Const('Получить статистику по рефералам'), id='get_refs_static', on_click=getters.get_refs_static),
         SwitchTo(Const('Работа с жалобами'), id='complain_menu', state=adminSG.complain_menu),
+        SwitchTo(Const('Заблокировать пользователя'), id='block_user_switcher', state=adminSG.block_user),
         SwitchTo(Const('Таргетированный показы'), id='target_menu_switcher', state=adminSG.target_menu),
         SwitchTo(Const('Сделать рассылку'), id='mailing_menu_switcher', state=adminSG.mailing_menu),
         SwitchTo(Const('Управление ОП'), id='op_menu_switcher', state=adminSG.op_menu),
@@ -24,6 +25,15 @@ admin_dialog = Dialog(
         Button(Const('Выгрузка базы пользователей'), id='get_users_txt', on_click=getters.get_users_txt),
         Cancel(Const('Назад'), id='close_admin'),
         state=adminSG.start
+    ),
+    Window(
+        Const('Введите username или user_id пользователя которого надо заблокировать'),
+        TextInput(
+            id='get_block_user',
+            on_success=getters.get_block_user
+        ),
+        SwitchTo(Const('🔙 Назад'), id='back', state=adminSG.start),
+        state=adminSG.block_user
     ),
     Window(
         Const('Введите ID пользователя которому вы хотели бы выдать бесконечный вип'),

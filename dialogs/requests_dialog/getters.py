@@ -15,11 +15,14 @@ from states.state_groups import requestsSG
 
 
 async def start_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs):
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    alien_requests = await session.get_requests_to_my(event_from_user.id)
+    my_requests = await session.get_my_requests(event_from_user.id)
     translator: Translator = dialog_manager.middleware_data.get('translator')
     return {
         'text': translator['requests'],
-        'my_requests': translator['my_requests_button'],
-        'alien_requests': translator['alien_requests_button']
+        'my_requests': translator['my_requests_button'] + f'({len(my_requests)})',
+        'alien_requests': translator['alien_requests_button'] + f'({len(alien_requests)})'
     }
 
 

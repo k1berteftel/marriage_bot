@@ -36,7 +36,6 @@ class TransferObjectsMiddleware(BaseMiddleware):
         else:
             person = cache.get(user.id)
         if not person or not person.locale:
-            print('ru')
             locale = 'ru'
         else:
             locale = person.locale

@@ -25,6 +25,32 @@ from states.state_groups import adminSG
 invite_params = 'restrict_members+promote_members+manage_chat+invite_users'
 
 
+async def get_block_user(msg: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str):
+    try:
+        user_data = int(text)
+    except Exception:
+        if not text.startswith('@'):
+            await msg.answer('Вы ввели данные не в том формате, пожалуйста попробуйте еще раз')
+            return
+        user_data = text[1::]
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    user = await session.get_user(user_data) if isinstance(user_data, int) else await session.get_user_by_username(user_data)
+    if not user:
+        await msg.answer('Такого пользователя нет в базе данных, пожалуйста попробуйте еще раз')
+        return
+    cache: TTLCache = dialog_manager.middleware_data.get('cache')
+    translator: Translator = create_translator(user.locale)
+    await msg.bot.send_message(
+        chat_id=user.user_id,
+        text=translator['block_message']
+    )
+    await session.set_block(user.user_id)
+    await session.del_form(user.user_id)
+    user = await session.get_user(user.user_id)
+    cache[user.user_id] = user
+    await dialog_manager.switch_to(adminSG.start)
+
+
 async def get_users_txt(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
     session: DataInteraction = dialog_manager.middleware_data.get('session')
     users = await session.get_users()
@@ -690,6 +716,8 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
     vips = 0
     men = 0
     women = 0
+    tokens_on = 0
+    tokens_sum = 0
     for user in users:
         if user.active:
             active += 1
@@ -701,6 +729,9 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
                     entry['yesterday'] = entry.get('yesterday') + 1
                 else:
                     entry['2_day_ago'] = entry.get('2_day_ago') + 1
+        if user.tokens:
+            tokens_on += 1
+            tokens_sum += user.tokens
         if user.activity:
             activity += 1
         if user.vip and user.vip_end:
@@ -728,7 +759,8 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             f'бота: {len(users) - active}\n - Провзаимодействовали с ботом за последние 24 часа: {activity}\n\n'
             f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - За вчерашний день: +{entry.get("yesterday")}'
             f'\n - Позавчера: + {entry.get("2_day_ago")}\n\n<b>Покупки:</b>\n - Людей купил vip: {vips}\n'
-            f' - Сумма пополнений за сегодня: {today_sum}\n - Сумма пополнений за все время: {sum}\n\n'
+            f' - Сумма пополнений за сегодня: {today_sum}\n - Сумма пополнений за все время: {sum}\n'
+            f' - Купили токенов(всего): {tokens_sum}\n - Людей купивших токены: {tokens_on}\n\n'
             f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}\n - Мужских анкет: {men}\n - Женских: {women}')
     await clb.message.answer(text=text)
 

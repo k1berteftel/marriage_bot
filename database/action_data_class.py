@@ -332,6 +332,11 @@ class DataInteraction():
             result = await session.scalar(select(UsersTable).where(UsersTable.user_id == user_id))
         return result
 
+    async def get_user_by_username(self, username: str):
+        async with self._sessions() as session:
+            result = await session.scalar(select(UsersTable).where(UsersTable.username == username))
+        return result
+
     async def get_links(self):
         async with self._sessions() as session:
             result = await session.scalars(select(OneTimeLinksIdsTable))

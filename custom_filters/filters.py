@@ -9,4 +9,4 @@ class StartDialogFilter(Filter):
         self.keyword = key
 
     async def __call__(self, msg: Message, translator: Translator):
-        return msg.text == translator[self.keyword]
+        return msg.text.strip() == translator[self.keyword].strip()

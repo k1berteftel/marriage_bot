@@ -241,8 +241,11 @@ async def start_admin_dialog(msg: Message, dialog_manager: DialogManager, sessio
 
 
 @user_router.callback_query(F.data == 'registration')
-async def start_form_dialog(clb: CallbackQuery, dialog_manager: DialogManager):
+async def start_form_dialog(clb: CallbackQuery, dialog_manager: DialogManager, translator: Translator):
     await clb.message.delete()
+    await clb.message.answer(
+        text=translator['hello']
+    )
     await dialog_manager.start(states.formSG.get_name, mode=StartMode.RESET_STACK)
 
 

@@ -146,6 +146,7 @@ class adminSG(StatesGroup):
     change_rate_amount = State()
     change_rate_price = State()
     set_vip = State()
+    block_user = State()
 
 
 class targetingSG(StatesGroup):
