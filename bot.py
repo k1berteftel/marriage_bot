@@ -57,7 +57,7 @@ async def main():
 
     bot = Bot(token=config.bot.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
-    await start_schedulers(DataInteraction(session), scheduler, bot)
+    #await start_schedulers(DataInteraction(session), scheduler, bot)
 
     dp = Dispatcher()  # storage=storage
 
