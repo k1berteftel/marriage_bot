@@ -17,14 +17,15 @@ from yookassa.payment import PaymentResponse
 async def check_vip(bot: Bot, user_id: int, session: DataInteraction, translator: Translator,  scheduler: AsyncIOScheduler):
     user = await session.get_user(user_id)
     if user.vip_end.timestamp() < datetime.today().timestamp():
-        scheduler.remove_job(str(user_id))
+        job = scheduler.get_job(job_id=str(user_id))
+        if job:
+            job.remove()
         await bot.send_message(
             chat_id=user_id,
             text=translator['not_enough_tokens']
         )
         await session.update_vip(user_id, False, vip_end=None)
-        scheduler.remove_job(str(user_id))
-        return
+        return False
     else:
         if (user.vip_end - datetime.today()).days == 1:
             await bot.send_message(
@@ -141,4 +142,18 @@ async def send_notification(user_id: int, session: DataInteraction, translator: 
         text=translator['notification_message'].format(count=count, name=user.name),
         reply_markup=keyboard
     )
+
+
+async def start_schedulers(session: DataInteraction, scheduler: AsyncIOScheduler, bot: Bot):
+    users: list[UsersTable] = await session.get_vip_users()
+    for user in users:
+        translator: Translator = load_Translator(user.locale)
+        if (await check_vip(bot, user.user_id, session, translator, scheduler)) == False:
+            scheduler.add_job(
+                check_vip,
+                'interval',
+                args=[bot, user.user_id, session, translator, scheduler],
+                id=str(user.user_id),
+                days=1
+            )
 

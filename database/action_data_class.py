@@ -346,6 +346,11 @@ class DataInteraction():
             result = await session.scalars(select(UsersTable))
         return result.fetchall()
 
+    async def get_vip_users(self):
+        async with self._sessions() as session:
+            result = await session.scalars(select(UsersTable).where(UsersTable.vip == True))
+        return result.fetchall()
+
     async def get_best_refs(self):
         async with self._sessions() as session:
             result = await session.scalars(select(UsersTable).order_by(UsersTable.refs))

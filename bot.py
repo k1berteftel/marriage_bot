@@ -9,8 +9,10 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.enums import ParseMode
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from utils.schedulers import start_schedulers
 from storage.nats_storage import NatsStorage
 from utils.nats_connect import connect_to_nats
+from database.action_data_class import DataInteraction
 from database.build import PostgresBuild
 from database.model import Base
 from config_data.config import load_config, Config
@@ -54,6 +56,9 @@ async def main():
     #  storage: NatsStorage = await NatsStorage(nc=nc, js=js).create_storage()
 
     bot = Bot(token=config.bot.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+
+    await start_schedulers(DataInteraction(session), scheduler, bot)
+
     dp = Dispatcher()  # storage=storage
 
     # подключаем роутеры

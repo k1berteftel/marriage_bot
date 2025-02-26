@@ -114,6 +114,10 @@ async def form_menu_getter(event_from_user: User, dialog_manager: DialogManager,
             description=form.description,
             religion=form.religion,
             family=form.family,
+            second_wife=translator['second_wife_form_widget'].format(
+                second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator[
+                    'add_second_wife_no_button']
+            ) if isinstance(form.second_wife, int) else '',
             children_count=form.children_count,
             children=form.children,
             leave=form.leave,
@@ -601,6 +605,9 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
                 description=form.description,
                 religion=form.religion,
                 family=form.family,
+                second_wife=translator['second_wife_form_widget'].format(
+                    second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator['add_second_wife_no_button']
+                ) if isinstance(form.second_wife, int) else '',
                 children_count=form.children_count,
                 children=form.children,
                 leave=form.leave,
@@ -665,6 +672,9 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
                 description=form.description,
                 religion=form.religion,
                 family=form.family,
+                second_wife=translator['second_wife_form_widget'].format(
+                    second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator['add_second_wife_no_button']
+                ) if isinstance(form.second_wife, int) else '',
                 children_count=form.children_count,
                 children=form.children,
                 leave=form.leave,

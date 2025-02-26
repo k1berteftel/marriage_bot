@@ -638,7 +638,7 @@ async def complain_menu_getter(event_from_user: User, dialog_manager: DialogMana
         user = await session.get_user(form.user_id)
         media = None
         if form.photos:
-            photo = MediaId(file_id=form.photos.split(' ')[0])
+            photo = MediaId(file_id=form.photos[0])
             media = MediaAttachment(file_id=photo, type=ContentType.PHOTO)
         text = translator['form'].format(
                 name=form.name,
@@ -652,6 +652,10 @@ async def complain_menu_getter(event_from_user: User, dialog_manager: DialogMana
                 description=form.description,
                 religion=form.religion,
                 family=form.family,
+                second_wife=translator['second_wife_form_widget'].format(
+                    second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator[
+                        'add_second_wife_no_button']
+                ) if isinstance(form.second_wife, int) else '',
                 children_count=form.children_count,
                 children=form.children,
                 leave=form.leave,

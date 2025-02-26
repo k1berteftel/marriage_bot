@@ -1,12 +1,14 @@
 import datetime
 from aiogram import Bot
 from aiogram.types import CallbackQuery, User, Message, ContentType, InlineKeyboardButton, InlineKeyboardMarkup
-from aiogram_dialog import DialogManager, ShowMode
+from aiogram_dialog import DialogManager, ShowMode, StartMode
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
 from aiogram_dialog.widgets.kbd import Button, Select
 from aiogram_dialog.widgets.input import ManagedTextInput, MessageInput
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
+from cachetools import TTLCache
 
+from keyboard.keyboards import get_start_keyboard
 from utils.build_ids import get_random_id
 from utils.text_utils import get_age_text
 from utils.schedulers import send_messages
@@ -15,7 +17,10 @@ from utils.translator.translator import Translator, recreate_locales
 from database.action_data_class import DataInteraction
 from database.model import DeeplinksTable, AdminsTable
 from config_data.config import load_config, Config
-from states.state_groups import languagesSG
+from states.state_groups import languagesSG, profileSG
+
+
+config: Config = load_config()
 
 
 async def start_getter(dialog_manager: DialogManager, **kwargs):
@@ -35,7 +40,9 @@ async def language_toggle(clb: CallbackQuery, widget: Button, dialog_manager: Di
     await session.set_locale(clb.from_user.id, locale)
     translator: Translator = create_translator(locale)
     start = dialog_manager.start_data.get('start') if dialog_manager.start_data else False
-    await dialog_manager.done()
+    cache: TTLCache = dialog_manager.middleware_data.get('cache')
+    new_user = await session.get_user(clb.from_user.id)
+    cache[clb.from_user.id] = new_user
     if not await session.check_form(clb.from_user.id) or start:
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
@@ -59,6 +66,17 @@ async def language_toggle(clb: CallbackQuery, widget: Button, dialog_manager: Di
         'leave': form.leave,
         'children': form.children
     }
+    admin = False
+    admins = [user.user_id for user in await session.get_admins()]
+    admins.extend(config.bot.admin_ids)
+    if clb.from_user.id in admins:
+        admin = True
+    message = await clb.message.answer(
+        text=translator['hello'],
+        reply_markup=get_start_keyboard(translator, admin)
+    )
+    await message.delete()
     new_form_dict = recreate_locales(form_dict, user.locale, locale)
     print(new_form_dict)
     await session.update_form(clb.from_user.id, **new_form_dict)
+    await dialog_manager.done()

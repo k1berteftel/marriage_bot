@@ -16,7 +16,6 @@ from database.action_data_class import DataInteraction
 from config_data.config import load_config, Config
 from states.state_groups import formSG
 
-
 config: Config = load_config()
 
 
@@ -311,17 +310,24 @@ async def get_family_getter(dialog_manager: DialogManager, **kwargs):
     translator: Translator = dialog_manager.middleware_data.get('translator')
     return {
         'text': translator['add_family'],
-        'family': translator['family_button'] if dialog_manager.dialog_data.get('male') == translator['men_button'] and dialog_manager.dialog_data.get('religion') == translator['add_religion_islam_button'] else False,
-        'no_family': translator['no_family_button_men'] if dialog_manager.dialog_data.get('male') == translator['men_button'] else translator['no_family_button_women'],
-        'divorce_family': translator['divorce_family_button_men'] if dialog_manager.dialog_data.get('male') == translator['men_button'] else translator['divorce_family_button_women'],
-        'widow_family': translator['widow_family_button_men'] if dialog_manager.dialog_data.get('male') == translator['men_button'] else translator['widow_family_button_women'],
+        'family': translator['family_button'] if dialog_manager.dialog_data.get('male') == translator[
+            'men_button'] and dialog_manager.dialog_data.get('religion') == translator[
+                                                     'add_religion_islam_button'] else False,
+        'no_family': translator['no_family_button_men'] if dialog_manager.dialog_data.get('male') == translator[
+            'men_button'] else translator['no_family_button_women'],
+        'divorce_family': translator['divorce_family_button_men'] if dialog_manager.dialog_data.get('male') ==
+                                                                     translator['men_button'] else translator[
+            'divorce_family_button_women'],
+        'widow_family': translator['widow_family_button_men'] if dialog_manager.dialog_data.get('male') == translator[
+            'men_button'] else translator['widow_family_button_women'],
         'back': translator['back']
     }
 
 
 async def choose_family(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
     translator: Translator = dialog_manager.middleware_data.get('translator')
-    if dialog_manager.dialog_data.get('male') == translator['men_button'] and dialog_manager.dialog_data.get('religion') == translator['add_religion_islam_button']:
+    if dialog_manager.dialog_data.get('male') == translator['men_button'] and dialog_manager.dialog_data.get(
+            'religion') == translator['add_religion_islam_button']:
         if clb.data.startswith('no'):
             dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[1][0].text
         elif clb.data.startswith('divorce'):
@@ -545,11 +551,15 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
                 description=form.description,
                 religion=form.religion,
                 family=form.family,
+                second_wife=translator['second_wife_form_widget'].format(
+                    second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator[
+                        'add_second_wife_no_button']
+                ) if isinstance(form.second_wife, int) else '',
                 children_count=form.children_count,
                 children=form.children,
                 leave=form.leave,
                 vip='✅' if user.vip else '❌')) if form else "<b>Анкета отсутствует</b>"
-            ) + f'\n\nЗаявка на проверку фоток от пользователя @{user.username}'
+                    ) + f'\n\nЗаявка на проверку фоток от пользователя @{user.username}'
             await msg.bot.send_message(
                 chat_id=admin,
                 text=text,
@@ -678,11 +688,14 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
                 description=form.description,
                 religion=form.religion,
                 family=form.family,
+                second_wife=translator['second_wife_form_widget'].format(
+                    second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator['add_second_wife_no_button']
+                ) if isinstance(form.second_wife, int) else '',
                 children_count=form.children_count,
                 children=form.children,
                 leave=form.leave,
                 vip='✅' if user.vip else '❌')) if form else "<b>Анкета отсутствует</b>"
-            ) + f'\n\nЗаявка на проверку фоток от пользователя @{user.username}'
+                    ) + f'\n\nЗаявка на проверку фоток от пользователя @{user.username}'
             await clb.bot.send_message(
                 chat_id=admin,
                 text=text,
