@@ -191,7 +191,7 @@ async def card_pay_getter(event_from_user: User, dialog_manager: DialogManager, 
     scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
     session: DataInteraction = dialog_manager.middleware_data.get('session')
     bot: Bot = dialog_manager.middleware_data.get('bot')
-    print(str(amount)+ '.00')
+    print(str(amount) + '.00')
     type = dialog_manager.dialog_data.get('type')
     payment = await Payment.create({
         "amount": {

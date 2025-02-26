@@ -716,7 +716,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
     vips = 0
     men = 0
     women = 0
-    tokens_on = 0
+    tokens_on = []
     tokens_sum = 0
     for user in users:
         if user.active:
@@ -729,9 +729,6 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
                     entry['yesterday'] = entry.get('yesterday') + 1
                 else:
                     entry['2_day_ago'] = entry.get('2_day_ago') + 1
-        if user.tokens:
-            tokens_on += 1
-            tokens_sum += user.tokens
         if user.activity:
             activity += 1
         if user.vip and user.vip_end:
@@ -751,6 +748,10 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             sum += transaction.sum
             if transaction.create > datetime.datetime.today() - datetime.timedelta(days=1):
                 today_sum += transaction.sum
+        if transaction.description == 'Покупка токенов':
+            tokens_sum += transaction.sum
+            if transaction.user_id not in tokens_on:
+                tokens_on.append(transaction.user_id)
 
     forms = await session.get_forms()
 
@@ -760,7 +761,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - За вчерашний день: +{entry.get("yesterday")}'
             f'\n - Позавчера: + {entry.get("2_day_ago")}\n\n<b>Покупки:</b>\n - Людей купил vip: {vips}\n'
             f' - Сумма пополнений за сегодня: {today_sum}\n - Сумма пополнений за все время: {sum}\n'
-            f' - Купили токенов(всего): {tokens_sum}\n - Людей купивших токены: {tokens_on}\n\n'
+            f' - Купили токенов(всего): {tokens_sum}\n - Людей купивших токены: {len(tokens_on)}\n\n'
             f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}\n - Мужских анкет: {men}\n - Женских: {women}')
     await clb.message.answer(text=text)
 
@@ -1012,7 +1013,7 @@ async def get_time(msg: Message, widget: ManagedTextInput, dialog_manager: Dialo
 async def get_mail_keyboard(msg: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str):
     try:
         buttons = text.split('\n')
-        keyboard: list[list] = [[i.split('-')[0], i.split('-')[1]] for i in buttons]
+        keyboard: list[list] = [[i.split('-')[0].strip(), i.split('-')[1].strip()] for i in buttons]
     except Exception as err:
         print(err)
         await msg.answer('Вы ввели данные не в том формате, пожалуйста попробуйте снова')
@@ -1037,6 +1038,7 @@ async def start_malling(clb: CallbackQuery, widget: Button, dialog_manager: Dial
         keyboard = [InlineKeyboardButton(text=i[0], url=i[1]) for i in keyboard]
     users = await session.get_users()
     if not time:
+        count = 0
         for user in users:
             try:
                 await bot.copy_message(
@@ -1047,10 +1049,11 @@ async def start_malling(clb: CallbackQuery, widget: Button, dialog_manager: Dial
                 )
                 if user.active == 0:
                     await session.set_active(user.user_id, 1)
+                count += 1
             except Exception as err:
                 print(err)
                 await session.set_active(user.user_id, 0)
-        await clb.answer('Рассылка прошла успешно')
+        await clb.answer(f'Рассылка прошла успешно, {count} из {len(users)} получили сообщение')
     else:
         today = datetime.datetime.today()
         date = datetime.datetime(year=today.year, month=today.month, day=today.day, hour=time[0], minute=time[1])
