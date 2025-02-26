@@ -147,7 +147,9 @@ async def send_notification(user_id: int, session: DataInteraction, translator: 
 
 async def start_schedulers(session: DataInteraction, scheduler: AsyncIOScheduler, bot: Bot):
     users: list[UsersTable] = await session.get_vip_users()
+    print(len(users))
     for user in users:
+        print(user.user_id, user.vip, user.vip_end, sep=' -- ')
         translator: Translator = load_Translator(user.locale)
         if (await check_vip(bot, user.user_id, session, translator, scheduler)) == False:
             scheduler.add_job(
