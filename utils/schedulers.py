@@ -16,6 +16,7 @@ from yookassa.payment import PaymentResponse
 
 async def check_vip(bot: Bot, user_id: int, session: DataInteraction, translator: Translator,  scheduler: AsyncIOScheduler):
     user = await session.get_user(user_id)
+    print(user.vip_end)
     if user.vip_end.timestamp() < datetime.today().timestamp():
         job = scheduler.get_job(job_id=str(user_id))
         if job:
