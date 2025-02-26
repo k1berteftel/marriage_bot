@@ -89,6 +89,7 @@ async def filter_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
     family = dialog_manager.dialog_data.get('family')
     children = dialog_manager.dialog_data.get('children')
     religion = dialog_manager.dialog_data.get('religion')
+    photo = dialog_manager.dialog_data.get('photo')
     user_form = await session.get_form(clb.from_user.id)
     forms = await session.filter_forms_by_params(
         clb.from_user.id,
@@ -97,6 +98,7 @@ async def filter_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
         family=family,
         children=children,
         religion=religion,
+        photo=photo
     )
     if not forms:
         scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
@@ -155,6 +157,7 @@ async def filter_menu_getter(dialog_manager: DialogManager, **kwargs):
     family = dialog_manager.dialog_data.get('family')
     children = dialog_manager.dialog_data.get('children')
     religion = dialog_manager.dialog_data.get('religion')
+    photo = dialog_manager.dialog_data.get('photo')
     params = ''
     if age:
         params += translator['filter_age_text'].format(min_age=age[0], max_age=age[1]) + '\n'
@@ -165,9 +168,10 @@ async def filter_menu_getter(dialog_manager: DialogManager, **kwargs):
     if children:
         params += translator['filter_children_text'].format(text=children) + '\n'
     if religion:
-        params += translator['filter_religion_text'].format(text=religion)
+        params += translator['filter_religion_text'].format(text=religion) + '\n'
     return {
         'text': translator['filter'].format(params=params),
+        'photo': ("✅" if photo else "❌") + translator['filter_photo_button'],
         'city': translator['filter_city_button'],
         'age': translator['filter_age_button'],
         'family': translator['filter_family_button'],
@@ -185,7 +189,16 @@ async def filter_menu_switcher(clb: CallbackQuery, widget: Button, dialog_manage
     if not user.vip:
         await clb.answer(translator['vip_filter_only_warning'])
         return
+    dialog_manager.dialog_data.clear()
     await dialog_manager.switch_to(searchSG.filter_menu)
+
+
+async def photo_toggle(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
+    photo = dialog_manager.dialog_data.get('photo')
+    if photo:
+        dialog_manager.dialog_data['photo'] = None
+    else:
+        dialog_manager.dialog_data['photo'] = True
 
 
 async def get_age(msg: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str):

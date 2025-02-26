@@ -48,6 +48,7 @@ async def get_block_user(msg: Message, widget: ManagedTextInput, dialog_manager:
     await session.del_form(user.user_id)
     user = await session.get_user(user.user_id)
     cache[user.user_id] = user
+    await msg.answer('Пользователь был успешно заблокирован')
     await dialog_manager.switch_to(adminSG.start)
 
 
@@ -729,7 +730,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
                     entry['yesterday'] = entry.get('yesterday') + 1
                 else:
                     entry['2_day_ago'] = entry.get('2_day_ago') + 1
-        if user.activity:
+        if user.activity.date() > (datetime.datetime.today() - datetime.timedelta(days=1)).date():
             activity += 1
         if user.vip and user.vip_end:
             vips += 1

@@ -87,6 +87,7 @@ texts = {
         'filter_family_text': '<b>Семейное положение:</b> {text}',
         'filter_children_text': '<b>Отношение к заводу детей:</b> {text}',
         'filter_religion_text': '<b>Религия:</b> {text}',
+        'filter_photo_button': 'Только с фото',
         'filter_age_button': '🕖Возраст',
         'filter_city_button': '🏙Город',
         'filter_family_button': '💍Семейное положение',

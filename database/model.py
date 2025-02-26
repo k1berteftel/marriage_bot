@@ -18,7 +18,7 @@ class UsersTable(Base):
     name: Mapped[str] = mapped_column(VARCHAR)
     user_id: Mapped[int] = mapped_column(BigInteger, unique=True)
     balance: Mapped[int] = mapped_column(Integer, default=0)
-    tokens: Mapped[int] = mapped_column(Integer, default=50)
+    tokens: Mapped[int] = mapped_column(Integer, default=30)
     vip: Mapped[bool] = mapped_column(Boolean, default=False)
     vip_end: Mapped[datetime] = mapped_column(DateTime, default=None, nullable=True)
     entry: Mapped[datetime] = mapped_column(DateTime, default=datetime.today())

@@ -22,6 +22,7 @@ search_dialog = Dialog(
     Window(
         Format('{text}'),
         Column(
+            Button(Const('{photo}'), id='only_photo_toggle', on_click=getters.photo_toggle),
             SwitchTo(Format('{age}'), id='get_age_switcher', state=searchSG.get_age),
             SwitchTo(Format('{city}'), id='get_city_switcher', state=searchSG.get_city),
             SwitchTo(Format('{family}'), id='get_family_switcher', state=searchSG.get_family),

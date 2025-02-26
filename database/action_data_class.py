@@ -1,6 +1,6 @@
 import datetime
 
-from sqlalchemy import select, insert, update, column, text, delete, and_, or_
+from sqlalchemy import select, insert, update, column, text, delete, and_, or_, exists
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from database.model import (UsersTable, FormTable, TransactionsTable, RequestsTable,
@@ -11,7 +11,6 @@ from database.model import (UsersTable, FormTable, TransactionsTable, RequestsTa
 from dateutil.relativedelta import relativedelta
 from utils.translator import Translator as create_translator
 from utils.translator.translator import Translator
-
 
 
 class DataInteraction():
@@ -617,6 +616,7 @@ class DataInteraction():
                     (FormTable.family == kwargs.get('family')) if kwargs.get('family') else True,
                     (FormTable.children == kwargs.get('children')) if kwargs.get('children') else True,
                     (FormTable.religion == kwargs.get('religion')) if kwargs.get('religion') else True,
+                    (exists(FormTable.photos)) if kwargs.get('photo') else True,
                     FormTable.active == True
                 )
             ).order_by(FormTable.age)
