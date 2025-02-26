@@ -320,14 +320,23 @@ async def get_family_getter(dialog_manager: DialogManager, **kwargs):
 
 
 async def choose_family(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
-    if clb.data.startswith('no'):
-        dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[1][0].text
-    elif clb.data.startswith('divorce'):
-        dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[2][0].text
-    elif clb.data.startswith('family'):
-        dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[0][0].text
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    if dialog_manager.dialog_data.get('male') == translator['men_button'] and dialog_manager.dialog_data.get('religion') == translator['add_religion_islam_button']:
+        if clb.data.startswith('no'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[1][0].text
+        elif clb.data.startswith('divorce'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[2][0].text
+        elif clb.data.startswith('family'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[0][0].text
+        else:
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[3][0].text
     else:
-        dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[3][0].text
+        if clb.data.startswith('no'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[0][0].text
+        elif clb.data.startswith('divorce'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[1][0].text
+        else:
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[2][0].text
     await dialog_manager.switch_to(formSG.get_children_count, show_mode=ShowMode.DELETE_AND_SEND)
 
 
