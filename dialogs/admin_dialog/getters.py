@@ -660,7 +660,7 @@ async def complain_menu_getter(event_from_user: User, dialog_manager: DialogMana
                 children=form.children,
                 leave=form.leave,
                 vip='✅' if user.vip else '❌'
-            )
+            ) + f'\n\n🔗Получено от пользователя: @{user.username}'
     else:
         complain = False
         media = None

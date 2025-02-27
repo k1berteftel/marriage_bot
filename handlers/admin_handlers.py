@@ -77,12 +77,16 @@ def get_chat_add_keyboard(chat_id: int):
 
 
 @admin_router.my_chat_member()
-async def new_chat_member(req: ChatMemberUpdated, dialog_manager: DialogManager):
+async def new_chat_member(req: ChatMemberUpdated, session: DataInteraction, dialog_manager: DialogManager):
     if req.chat.type not in ['group', 'supergroup', 'channel'] or not req.new_chat_member.can_invite_users:
+        return
+    admins = [i.user_id for i in await session.get_admins()]
+    admins.extend(config.bot.admin_ids)
+    if req.from_user.id not in admins:
         return
     text = f'Добавить канал|чат {req.chat.title} в ОП?'
     await req.bot.send_message(
-        chat_id=config.bot.admin_ids[0],
+        chat_id=req.from_user.id,
         text=text,
         reply_markup=get_chat_add_keyboard(req.chat.id)
     )

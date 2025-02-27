@@ -134,10 +134,10 @@ async def filter_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
             description=form.description,
             religion=form.religion,
             family=form.family,
-        second_wife=translator['second_wife_form_widget'].format(
-            second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator[
-                'add_second_wife_no_button']
-        ) if isinstance(form.second_wife, int) else '',
+            second_wife=translator['second_wife_form_widget'].format(
+                second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator[
+                    'add_second_wife_no_button']
+            ) if isinstance(form.second_wife, int) else '',
             children_count=form.children_count,
             children=form.children,
             leave=form.leave,
@@ -195,7 +195,7 @@ async def filter_menu_switcher(clb: CallbackQuery, widget: Button, dialog_manage
     session: DataInteraction = dialog_manager.middleware_data.get('session')
     user = await session.get_user(clb.from_user.id)
     if not user.vip:
-        await clb.answer(translator['vip_filter_only_warning'])
+        await clb.message.answer(translator['vip_filter_only_warning'])
         return
     dialog_manager.dialog_data.clear()
     await dialog_manager.switch_to(searchSG.filter_menu)

@@ -75,9 +75,9 @@ async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translato
 async def send_contact_data(clb: CallbackQuery, state: FSMContext, translator: Translator, session: DataInteraction):
     form_user_id = int(clb.data.split('_')[1])
     if not await session.add_request(sender=clb.from_user.id, receiver=form_user_id):
-        await clb.answer(text=translator['add_request_error'])
+        await clb.message.answer(text=translator['add_request_error'])
         return
-    await clb.answer(text=translator['add_request_success'])
+    await clb.message.answer(text=translator['add_request_success'])
     await clb.bot.send_message(
         chat_id=form_user_id,
         text=translator['add_request_message']

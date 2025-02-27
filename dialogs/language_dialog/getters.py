@@ -44,6 +44,7 @@ async def language_toggle(clb: CallbackQuery, widget: Button, dialog_manager: Di
     new_user = await session.get_user(clb.from_user.id)
     cache[clb.from_user.id] = new_user
     if not await session.check_form(clb.from_user.id) or start:
+        await dialog_manager.done()
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton(text=translator['confirm_terms_button'], callback_data='confirm_terms')]
