@@ -14,6 +14,28 @@ from yookassa import Configuration, Payment
 from yookassa.payment import PaymentResponse
 
 
+async def check_form_boost(bot: Bot, user_id: int, session: DataInteraction, scheduler: AsyncIOScheduler, translator: Translator):
+    form = await session.get_form(user_id)
+    if datetime.today().timestamp() > form.boost.timestamp():
+        await bot.send_message(
+            chat_id=user_id,
+            text=translator['boost_off']
+        )
+        await session.set_form_boost(user_id, None)
+        await scheduler.remove_job(job_id=f'form_boost_{user_id}')
+
+
+async def check_super_vip(bot: Bot, user_id: int, session: DataInteraction, scheduler: AsyncIOScheduler, translator: Translator):
+    user = await session.get_user(user_id)
+    if datetime.today().timestamp() > user.super_vip.timestamp():
+        await bot.send_message(
+            chat_id=user_id,
+            text=translator['super_vip_off']
+        )
+        await session.set_super_vip(user_id, None)
+        await scheduler.remove_job(job_id=f'super_vip_{user_id}')
+
+
 async def check_vip(bot: Bot, user_id: int, session: DataInteraction, translator: Translator,  scheduler: AsyncIOScheduler):
     user = await session.get_user(user_id)
     print(user.vip_end)
@@ -78,6 +100,72 @@ async def check_payment(payment_id: any, user_id: int, bot: Bot, scheduler: Asyn
             tokens = kwargs.get('tokens')
             await session.update_tokens(user.user_id, tokens)
             await session.add_transaction(user_id, tokens, 'Покупка токенов')
+        elif kwargs.get('type') == 'super_vip':
+            hours = kwargs.get('hours')
+            if user.super_vip:
+                job = scheduler.get_job(job_id=f'super_vip_{user_id}')
+                job.remove()
+                date = user.super_vip + relativedelta(hours=hours)
+                await session.set_super_vip(user_id, date)
+                scheduler.add_job(
+                    check_super_vip,
+                    trigger='interval',
+                    args=[bot, user_id, session, scheduler, translator],
+                    id=f'super_vip_{user_id}',
+                    minutes=30
+                )
+            else:
+                date = datetime.today() + relativedelta(hours=hours)
+                await session.set_super_vip(user_id, date)
+                scheduler.add_job(
+                    check_super_vip,
+                    trigger='interval',
+                    args=[bot, user_id, session, scheduler, translator],
+                    id=f'super_vip_{user_id}',
+                    hours=1
+                )
+            message = await bot.send_message(chat_id=user_id, text=translator['super_vip_status'])
+            job_id = get_random_id()
+            scheduler.add_job(
+                del_message,
+                'interval',
+                args=[message, scheduler, job_id],
+                seconds=7,
+                id=job_id
+            )
+        elif kwargs.get('type') == 'boost':
+            hours = kwargs.get('hours')
+            form = await session.get_form(user_id)
+            if form.boost:
+                job = scheduler.get_job(job_id=f'form_boost_{user_id}')
+                job.remove()
+                date = form.boost + relativedelta(hours=hours)
+                await session.set_form_boost(user_id, date)
+                scheduler.add_job(
+                    check_form_boost,
+                    trigger='interval',
+                    args=[bot, user_id, session, scheduler, translator],
+                    id=f'form_boost_{user_id}',
+                    minutes=30
+                )
+            else:
+                await session.set_form_boost(user_id, datetime.today() + relativedelta(hours=hours))
+                scheduler.add_job(
+                    check_form_boost,
+                    trigger='interval',
+                    args=[bot, user_id, session, scheduler, translator],
+                    id=f'form_boost_{user_id}',
+                    hours=1
+                )
+            message = await bot.send_message(chat_id=user_id, text=translator['boost_on'])
+            job_id = get_random_id()
+            scheduler.add_job(
+                del_message,
+                'interval',
+                args=[message, scheduler, job_id],
+                seconds=7,
+                id=job_id
+            )
         else:
             date = kwargs.get('date')
             if not user.vip:

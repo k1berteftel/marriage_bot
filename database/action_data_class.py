@@ -398,7 +398,7 @@ class DataInteraction():
     async def update_income(self, user_id: int, income: int):
         async with self._sessions() as session:
             await session.execute(update(UsersTable).where(UsersTable.user_id == user_id).values(
-                balance=UsersTable.income + income
+                income=UsersTable.income + income
             ))
             await session.commit()
 
@@ -462,6 +462,20 @@ class DataInteraction():
         async with self._sessions() as session:
             await session.execute(update(RatesTable).where(RatesTable.id == id).values(
                 price=price
+            ))
+            await session.commit()
+
+    async def set_super_vip(self, user_id: int, date: datetime.datetime | None):
+        async with self._sessions() as session:
+            await session.execute(update(UsersTable).where(UsersTable.user_id == user_id).values(
+                super_vip=date
+            ))
+            await session.commit()
+
+    async def set_form_boost(self, user_id: int, date: datetime.datetime | None):
+        async with self._sessions() as session:
+            await session.execute(update(FormTable).where(FormTable.user_id == user_id).values(
+                boost=date
             ))
             await session.commit()
 

@@ -24,6 +24,18 @@ async def start_getter(event_from_user: User, dialog_manager: DialogManager, **k
     session: DataInteraction = dialog_manager.middleware_data.get('session')
     user = await session.get_user(event_from_user.id)
     form = await session.get_form(event_from_user.id)
+    super_vip = (translator['super_vip_widget'].format(
+        super_vip=translator['vip_enable_widget'].format(vip=user.super_vip.strftime('%d-%m-%Y %H:%M'))
+    )) if user.super_vip else translator['super_vip_widget'].format(
+        super_vip=translator['vip_disable_widget']
+    ) if form.male == translator['men_button'] else ''
+
+    boost = (translator['form_boost_widget'].format(
+        form_boost=translator['vip_enable_widget'].format(vip=form.boost.strftime('%d-%m-%Y %H:%M'))
+    )) if user.super_vip else translator['form_boost_widget'].format(
+        form_boost=translator['vip_disable_widget']
+    ) if form.male == translator['men_button'] else ''
+
     return {
         'text': translator['profile'].format(
             username='@' + user.username if user.username else '-',
@@ -32,7 +44,9 @@ async def start_getter(event_from_user: User, dialog_manager: DialogManager, **k
             vip=translator['vip_enable_widget'].format(vip=user.vip_end.strftime('%d-%m-%Y')) if (
                     user.vip and user.vip_end
             ) else translator['vip_disable_widget'] if not user.vip else translator['vip_enable_women'],
-            form_status=translator['form_enable_widget'] if form.active else translator['form_disable_widget']
+            super_vip=super_vip,
+            form_status=translator['form_enable_widget'] if form.active else translator['form_disable_widget'],
+            boost=boost
         ),
         'form_toggle': translator['disable_button'] if form.active else translator['enable_button'],
         'my_form': translator['my_form_button'],
@@ -60,10 +74,6 @@ async def ref_static_getter(event_from_user: User, dialog_manager: DialogManager
     session: DataInteraction = dialog_manager.middleware_data.get('session')
     transactions = await session.get_transactions(event_from_user.id)
     user = await session.get_user(event_from_user.id)
-    print([
-            transaction.sum if transaction.description == 'Вывод средств с баланса' else
-            0 for transaction in transactions
-        ])
     money = sum(
         [
             transaction.sum if transaction.description == 'Вывод средств с баланса' else

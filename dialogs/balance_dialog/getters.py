@@ -35,12 +35,27 @@ async def start_getter(event_from_user: User, dialog_manager: DialogManager, **k
     user = await session.get_user(event_from_user.id)
     form = await session.get_form(event_from_user.id)
     translator: Translator = dialog_manager.middleware_data.get('translator')
+
+    super_vip = (translator['super_vip_widget'].format(
+        super_vip=translator['vip_enable_widget'].format(vip=user.super_vip.strftime('%d-%m-%Y %H:%M'))
+    )) if user.super_vip else translator['super_vip_widget'].format(
+        super_vip=translator['vip_disable_widget']
+    ) if form.male == translator['men_button'] else ''
+
+    boost = (translator['form_boost_widget'].format(
+        form_boost=translator['vip_enable_widget'].format(vip=form.boost.strftime('%d-%m-%Y %H:%M'))
+    )) if user.super_vip else translator['form_boost_widget'].format(
+        form_boost=translator['vip_disable_widget']
+    ) if form.male == translator['men_button'] else ''
+
     if form.male == translator['men_button']:
         text = translator['balance'].format(
             balance=user.balance,
-            tokens=user.tokens,
+            tokens=translator['tokens_widget'].format(tokens=user.tokens) if form.male == translator['men_button'] else '',
             vip=(translator['vip_enable_widget'].format(vip=user.vip_end.strftime('%d-%m-%Y')) if (user.vip and user.vip_end
             ) else translator['vip_disable_widget'] if not user.vip else translator['vip_enable_women']),
+            super_vip=super_vip,
+            boost=boost
         )
     else:
         if user.vip:
@@ -50,6 +65,8 @@ async def start_getter(event_from_user: User, dialog_manager: DialogManager, **k
     return {
         'text': text,
         'payment': translator['payment_button'],
+        'super_vip': translator['super_vip_button'],
+        'boost': translator['boost_button'],
         'vip': translator['vip_button'],
         'get_vip': translator['women_verification_button'],
         'balance': translator['balance_menu_button'],
@@ -58,6 +75,69 @@ async def start_getter(event_from_user: User, dialog_manager: DialogManager, **k
         'men': form.male == translator['men_button'],
         'women': (form.male == translator['women_button']) and not user.vip
     }
+
+
+async def boost_menu_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs):
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    return {
+        'text': translator['boost'],
+        '3_hours': translator['3_hours_boost_button'],
+        '7_hours': translator['7_hours_boost_button'],
+        '24_hours': translator['day_boost_button'],
+        'back': translator['back'],
+    }
+
+
+async def boost_choose(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    category = clb.data.split('_')[0]
+    if category == 'three':
+        hours = 3
+        price = 299
+    elif category == 'seven':
+        hours = 7
+        price = 499
+    else:
+        hours = 24
+        price = 999
+    dialog_manager.dialog_data['hours'] = hours
+    dialog_manager.dialog_data['price'] = price
+    dialog_manager.dialog_data['type'] = 'boost'
+    await dialog_manager.switch_to(balanceSG.choose_payment_menu)
+
+
+async def super_vip_menu_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs):
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    return {
+        'text': translator['super_vip'],
+        '3_hours': translator['3_hours_super_vip_button'],
+        '7_hours': translator['7_hours_super_vip_button'],
+        '24_hours': translator['day_super_vip_button'],
+        'back': translator['back'],
+    }
+
+
+async def super_vip_choose(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    category = clb.data.split('_')[0]
+    if category == 'three':
+        hours = 3
+        price = 999
+    elif category == 'seven':
+        hours = 7
+        price = 2499
+    else:
+        hours = 24
+        price = 4999
+    dialog_manager.dialog_data['hours'] = hours
+    dialog_manager.dialog_data['price'] = price
+    dialog_manager.dialog_data['type'] = 'super_vip'
+    await dialog_manager.switch_to(balanceSG.choose_payment_menu)
+
 
 
 async def get_vip_switcher(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
@@ -193,6 +273,14 @@ async def card_pay_getter(event_from_user: User, dialog_manager: DialogManager, 
     bot: Bot = dialog_manager.middleware_data.get('bot')
     print(str(amount) + '.00')
     type = dialog_manager.dialog_data.get('type')
+    if type == 'rate':
+        description = "Покупка токенов в боте"
+    elif type == 'super_vip':
+        description = "Приобретение super vip в боте"
+    elif type == 'boost':
+        description = "Буст анкеты"
+    else:
+        description = "Приобретение vip в боте"
     payment = await Payment.create({
         "amount": {
             "value": str(amount) + '.00',
@@ -208,7 +296,7 @@ async def card_pay_getter(event_from_user: User, dialog_manager: DialogManager, 
             },
             'items': [
                 {
-                    "description": "Покупка токенов в боте" if type == 'rate' else "Приобретение vip в боте",
+                    "description": description,
                     "amount": {
                         "value": str(amount) + '.00',
                         "currency": "RUB"
@@ -222,7 +310,7 @@ async def card_pay_getter(event_from_user: User, dialog_manager: DialogManager, 
             ]
         },
         "capture": True,
-        "description": "Покупка токенов в боте" if type == 'rate' else "Приобретение vip в боте",
+        "description": description
     }, uuid.uuid4())
     url = payment.confirmation.confirmation_url
     days = dialog_manager.dialog_data.get('days')
@@ -232,7 +320,8 @@ async def card_pay_getter(event_from_user: User, dialog_manager: DialogManager, 
         args=[payment.id, event_from_user.id, bot, scheduler, session, translator],
         id=f'payment_{event_from_user.id}',
         kwargs={'tokens': dialog_manager.dialog_data.get('tokens'), 'amount': amount,
-                'type': type, 'date': relativedelta(days=days) if days else None},
+                'type': type, 'date': relativedelta(days=days) if days else None,
+                'hours': dialog_manager.dialog_data.get('hours')},
         seconds=5
     )
     return {

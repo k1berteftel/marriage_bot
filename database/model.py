@@ -20,14 +20,15 @@ class UsersTable(Base):
     balance: Mapped[int] = mapped_column(Integer, default=0)
     tokens: Mapped[int] = mapped_column(Integer, default=30)
     vip: Mapped[bool] = mapped_column(Boolean, default=False)
-    vip_end: Mapped[datetime] = mapped_column(DateTime, default=None, nullable=True)
-    entry: Mapped[datetime] = mapped_column(DateTime, default=datetime.today())
+    super_vip: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=None, nullable=True)
+    vip_end: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=None, nullable=True)
+    entry: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.today())
     locale: Mapped[str] = mapped_column(VARCHAR, nullable=True)
     referral: Mapped[int] = mapped_column(BigInteger, nullable=True, default=None)  # реферал
     refs: Mapped[int] = mapped_column(BigInteger, default=0)  # Кол-во зашедших рефералов
     income: Mapped[int] = mapped_column(Integer, default=0)  # Общий доход с рефералов
     active: Mapped[int] = mapped_column(Integer, default=1)
-    activity: Mapped[datetime] = mapped_column(DateTime, default=datetime.today())
+    activity: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.today())
     block: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
@@ -53,6 +54,7 @@ class FormTable(Base):
     children: Mapped[str] = mapped_column(VARCHAR)
     leave: Mapped[str] = mapped_column(String)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
+    boost: Mapped[DateTime] = mapped_column(DateTime(timezone=True), default=None, nullable=True)
 
 
 class WatchesTable(Base):
@@ -62,7 +64,7 @@ class WatchesTable(Base):
 
     user_id: Mapped[int] = mapped_column(BigInteger)
     form_id: Mapped[int] = mapped_column(BigInteger)
-    view: Mapped[datetime] = mapped_column(DateTime, default=datetime.today())
+    view: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.today())
 
 
 class TransactionsTable(Base):
@@ -73,7 +75,7 @@ class TransactionsTable(Base):
     user_id: Mapped[int] = mapped_column(BigInteger)
     sum: Mapped[int] = mapped_column(Integer)
     description: Mapped[str] = mapped_column(String, nullable=True)
-    create: Mapped[datetime] = mapped_column(DateTime, default=datetime.today())
+    create: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.today())
 
 
 class RequestsTable(Base):

@@ -52,6 +52,8 @@ class balanceSG(StatesGroup):
     crypto_payment = State()
     vip_menu = State()
     vip_choose = State()
+    super_vip_menu = State()
+    boost_menu = State()
     history_menu = State()
 
 
@@ -145,7 +147,8 @@ class adminSG(StatesGroup):
     change_rate_menu = State()
     change_rate_amount = State()
     change_rate_price = State()
-    set_vip = State()
+    access_menu = State()
+    set_access = State()
     block_user = State()
 
 

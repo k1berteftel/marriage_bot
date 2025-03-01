@@ -12,7 +12,7 @@ admin_dialog = Dialog(
     Window(
         Const('Админ панель'),
         Button(Const('📊 Получить статистику'), id='get_static', on_click=getters.get_static),
-        SwitchTo(Const('Выдать вип'), id='set_vip_switcher', state=adminSG.set_vip),
+        SwitchTo(Const('Управление доступами(vip, boosts)'), id='access_menu_switcher', state=adminSG.access_menu),
         Button(Const('Получить статистику по рефералам'), id='get_refs_static', on_click=getters.get_refs_static),
         SwitchTo(Const('Работа с жалобами'), id='complain_menu', state=adminSG.complain_menu),
         SwitchTo(Const('Заблокировать пользователя'), id='block_user_switcher', state=adminSG.block_user),
@@ -27,6 +27,25 @@ admin_dialog = Dialog(
         state=adminSG.start
     ),
     Window(
+        Const('Меню управления доступами'),
+        Column(
+            Button(Const('Выдать VIP'), id='vip_choose', on_click=getters.access_choose),
+            Button(Const('Выдать SUPER-VIP'), id='super_vip_choose', on_click=getters.access_choose),
+            Button(Const('Выдать boost'), id='boost_choose', on_click=getters.access_choose),
+        ),
+        SwitchTo(Const('🔙 Назад'), id='back', state=adminSG.start),
+        state=adminSG.access_menu
+    ),
+    Window(
+        Const('Введите ID пользователя которому вы хотели бы выдать права'),
+        TextInput(
+            id='set_vip',
+            on_success=getters.set_access
+        ),
+        SwitchTo(Const('🔙 Назад'), id='back_access_menu', state=adminSG.access_menu),
+        state=adminSG.set_access
+    ),
+    Window(
         Const('Введите username или user_id пользователя которого надо заблокировать'),
         TextInput(
             id='get_block_user',
@@ -34,15 +53,6 @@ admin_dialog = Dialog(
         ),
         SwitchTo(Const('🔙 Назад'), id='back', state=adminSG.start),
         state=adminSG.block_user
-    ),
-    Window(
-        Const('Введите ID пользователя которому вы хотели бы выдать бесконечный вип'),
-        TextInput(
-            id='set_vip',
-            on_success=getters.set_vip
-        ),
-        SwitchTo(Const('🔙 Назад'), id='back', state=adminSG.start),
-        state=adminSG.set_vip
     ),
     Window(
         Const('Выберите тип рассылки'),

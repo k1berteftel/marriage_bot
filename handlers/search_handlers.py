@@ -6,6 +6,8 @@ from aiogram_dialog import DialogManager, StartMode
 from aiogram.utils.media_group import MediaGroupBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+
+from utils.filter_functions import sort_forms
 from utils.build_ids import get_random_id
 from utils.schedulers import del_message
 from keyboard.keyboards import get_search_keyboard
@@ -24,6 +26,8 @@ async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translato
     if not forms:
         forms = await session.filter_forms(user_id=clb.from_user.id)
         if not forms:
+            forms = await session.filter_forms(user_id=clb.from_user.id, counter=4)
+        if not forms:
             message = await clb.message.answer(translator['form_error'])
             job_id = get_random_id()
             scheduler.add_job(
@@ -34,6 +38,7 @@ async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translato
                 id=job_id
             )
             return
+        forms = await sort_forms(forms, session)
     form = await session.get_form_by_id(forms[0])
     forms.pop(0)
     user = await session.get_user(form.user_id)
@@ -73,7 +78,12 @@ async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translato
 
 @search_router.callback_query(F.data.startswith('contact'))
 async def send_contact_data(clb: CallbackQuery, state: FSMContext, translator: Translator, session: DataInteraction):
+    user = await session.get_user(clb.from_user.id)
     form_user_id = int(clb.data.split('_')[1])
+    if user.super_vip:
+        form_user = await session.get_user(form_user_id)
+        await clb.message.answer(translator['success_my_request'].format(username=form_user.username))
+        return
     if not await session.add_request(sender=clb.from_user.id, receiver=form_user_id):
         await clb.message.answer(text=translator['add_request_error'])
         return

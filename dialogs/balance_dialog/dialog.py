@@ -15,6 +15,8 @@ balance_dialog = Dialog(
         Column(
             SwitchTo(Format('{payment}'), id='payment_menu_switcher', state=balanceSG.payment_menu, when='men'),
             SwitchTo(Format('{vip}'), id='vip_menu_switcher', state=balanceSG.vip_menu, when='men'),
+            SwitchTo(Format('{super_vip}'), id='supper_vip_menu_switcher', state=balanceSG.super_vip_menu, when='men'),
+            SwitchTo(Format('{boost}'), id='boost_menu_switcher', state=balanceSG.boost_menu, when='men'),
             SwitchTo(Format('{balance}'), id='balance_menu_switcher', state=balanceSG.balance_menu),
             SwitchTo(Format('{history}'), id='history_menu_switcher', state=balanceSG.history_menu, when='men'),
             Button(Format('{get_vip}'), id='get_vip_switcher', on_click=getters.get_vip_switcher, when='women'),
@@ -22,6 +24,28 @@ balance_dialog = Dialog(
         ),
         getter=getters.start_getter,
         state=balanceSG.start
+    ),
+    Window(
+        Format('{text}'),
+        Column(
+            Button(Format('{3_hours}'), id='three_hours_boost_choose', on_click=getters.boost_choose),
+            Button(Format('{7_hours}'), id='seven_hours_boost_choose', on_click=getters.boost_choose),
+            Button(Format('{24_hours}'), id='day_boost_choose', on_click=getters.boost_choose),
+        ),
+        SwitchTo(Format('{back}'), id='back', state=balanceSG.start),
+        getter=getters.boost_menu_getter,
+        state=balanceSG.boost_menu
+    ),
+    Window(
+        Format('{text}'),
+        Column(
+            Button(Format('{3_hours}'), id='three_hours_super_vip_choose', on_click=getters.super_vip_choose),
+            Button(Format('{7_hours}'), id='seven_hours_super_vip_choose', on_click=getters.super_vip_choose),
+            Button(Format('{24_hours}'), id='day_super_vip_choose', on_click=getters.super_vip_choose),
+        ),
+        SwitchTo(Format('{back}'), id='back', state=balanceSG.start),
+        getter=getters.super_vip_menu_getter,
+        state=balanceSG.super_vip_menu
     ),
     Window(
         Format('{text}'),

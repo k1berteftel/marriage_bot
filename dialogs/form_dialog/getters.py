@@ -515,14 +515,6 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
         leave=leave
     )
     message = await msg.answer(translator['add_form_notification'])
-    job_id = get_random_id()
-    scheduler.add_job(
-        del_message,
-        'interval',
-        args=[message, scheduler, job_id],
-        seconds=7,
-        id=job_id
-    )
     #  ___
 
     builder: MediaGroupBuilder = MediaGroupBuilder(
@@ -649,14 +641,6 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
         leave=leave
     )
     message = await clb.message.answer(translator['add_form_notification'])
-    job_id = get_random_id()
-    scheduler.add_job(
-        del_message,
-        'interval',
-        args=[message, scheduler, job_id],
-        seconds=7,
-        id=job_id
-    )
     #  ___
 
     admins = [i.user_id for i in await session.get_admins()]

@@ -67,15 +67,40 @@ async def get_users_txt(clb: CallbackQuery, widget: Button, dialog_manager: Dial
         ...
 
 
-async def set_vip(msg: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str):
+async def access_choose(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
+    category = clb.data.split('_')[0]
+    dialog_manager.dialog_data['type'] = category
+    await dialog_manager.switch_to(adminSG.set_access)
+
+
+async def set_access(msg: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str):
     try:
         user_id = int(text)
     except Exception:
+        if text.startswith('@'):
+            session: DataInteraction = dialog_manager.middleware_data.get('session')
+            user = await session.get_user_by_username(text[1::])
+            if not user:
+                await msg.answer('Такого пользователя нету в базе данных бота')
+                return
         await msg.answer('ID должно быть числом, пожалуйста попробуйте еще раз')
         return
     session: DataInteraction = dialog_manager.middleware_data.get('session')
-    await session.update_vip(user_id, vip=True)
-    await msg.answer('Вип статус был успешно выдан')
+    user = await session.get_user(user_id)
+    if not user:
+        await msg.answer('Такого пользователя нету в базе данных бота')
+        return
+    type = dialog_manager.dialog_data.get('type')
+    date = datetime.datetime.today() + datetime.timedelta(days=30)
+    if type == 'vip':
+        await session.update_vip(user_id, vip=True)
+        await msg.answer('Вип статус был успешно выдан')
+    elif type == 'super_vip':
+        await session.set_super_vip(user_id, date)
+        await msg.answer('Super-vip статус был успешно выдан')
+    else:
+        await session.set_form_boost(user_id, date)
+        await msg.answer('Буст анкеты был успешно выдан')
 
 
 async def del_impression(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
@@ -636,6 +661,7 @@ async def complain_menu_getter(event_from_user: User, dialog_manager: DialogMana
     if complains:
         form = await session.get_form(complains[page].form_user_id)
         user = await session.get_user(form.user_id)
+        sender_user = await session.get_user(complains[page].user_id)
         media = None
         if form.photos:
             photo = MediaId(file_id=form.photos[0])
@@ -660,7 +686,7 @@ async def complain_menu_getter(event_from_user: User, dialog_manager: DialogMana
                 children=form.children,
                 leave=form.leave,
                 vip='✅' if user.vip else '❌'
-            ) + f'\n\n🔗Получено от пользователя: @{user.username}'
+            ) + f'\n\n🔗Жалоба на пользователя: @{user.username}\n🔗Получено от пользователя: @{sender_user.usernameч}'
     else:
         complain = False
         media = None
@@ -727,6 +753,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
         if user.active:
             active += 1
         for day in range(0, 3):
+            #print(user.entry.date(), (datetime.datetime.today() - datetime.timedelta(days=day)).date())
             if user.entry.date() == (datetime.datetime.today() - datetime.timedelta(days=day)).date():
                 if day == 0:
                     entry['today'] = entry.get('today') + 1
@@ -747,12 +774,9 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
                 women += 1
 
     sum = 0
-    today_sum = 0
     for transaction in transactions:
         if transaction.description == 'Пополнение баланса':
             sum += transaction.sum
-            if transaction.create > datetime.datetime.today() - datetime.timedelta(days=1):
-                today_sum += transaction.sum
         if transaction.description == 'Покупка токенов':
             tokens_sum += transaction.sum
             if transaction.user_id not in tokens_on:
@@ -765,7 +789,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             f'бота: {len(users) - active}\n - Провзаимодействовали с ботом за последние 24 часа: {activity}\n\n'
             f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - За вчерашний день: +{entry.get("yesterday")}'
             f'\n - Позавчера: + {entry.get("2_day_ago")}\n\n<b>Покупки:</b>\n - Людей купил vip: {vips}\n'
-            f' - Сумма пополнений за сегодня: {today_sum}\n - Сумма пополнений за все время: {sum}\n'
+            f' - Сумма пополнений за все время: {sum}\n'
             f' - Купили токенов(всего): {tokens_sum}\n - Людей купивших токены: {len(tokens_on)}\n\n'
             f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}\n - Мужских анкет: {men}\n - Женских: {women}')
     await clb.message.answer(text=text)

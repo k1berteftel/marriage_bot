@@ -7,6 +7,7 @@ from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram.utils.media_group import MediaGroupBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from utils.filter_functions import sort_forms
 from utils.translator.translator import Translator
 from utils.build_ids import get_random_id
 from utils.schedulers import del_message
@@ -32,6 +33,8 @@ async def search_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
     state: FSMContext = dialog_manager.middleware_data.get('state')
     forms = await session.filter_forms(clb.from_user.id)
     if not forms:
+        forms = await session.filter_forms(user_id=clb.from_user.id, counter=4)
+    if not forms:
         scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
         message = await clb.message.answer(translator['form_error'])
         job_id = get_random_id()
@@ -44,6 +47,7 @@ async def search_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
         )
         await dialog_manager.switch_to(searchSG.start, show_mode=ShowMode.DELETE_AND_SEND)
         return
+    forms = await sort_forms(forms, session)
     form = await session.get_form_by_id(forms[0])
     forms.pop(0)
     user = await session.get_user(form.user_id)
