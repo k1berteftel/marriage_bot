@@ -12,6 +12,7 @@ admin_dialog = Dialog(
     Window(
         Const('Админ панель'),
         Button(Const('📊 Получить статистику'), id='get_static', on_click=getters.get_static),
+        Button(Const('Выгрузить все транзакции'), id='get_all_transactions', on_click=getters.get_transactions),
         SwitchTo(Const('Управление доступами(vip, boosts)'), id='access_menu_switcher', state=adminSG.access_menu),
         Button(Const('Получить статистику по рефералам'), id='get_refs_static', on_click=getters.get_refs_static),
         SwitchTo(Const('Работа с жалобами'), id='complain_menu', state=adminSG.complain_menu),

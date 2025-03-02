@@ -25,6 +25,32 @@ from states.state_groups import adminSG
 invite_params = 'restrict_members+promote_members+manage_chat+invite_users'
 
 
+async def get_transactions(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    transactions = await session.get_all_transactions()
+    tables = []
+    for transaction in transactions:
+        tables.append(
+            [
+                transaction.user_id,
+                transaction.sum,
+                transaction.description,
+                transaction.create.strftime('%d-%m-%Y %H:%M')
+            ]
+        )
+    tables.insert(0, ['USER ID', 'Сумма', 'Описание', 'Дата транзакции'])
+    table = get_table(tables)
+    try:
+        await clb.message.answer_document(document=FSInputFile(path=table))
+    except Exception as err:
+        await clb.answer('Что-то пошло не так, пожалуйста попробуйте снова')
+
+    try:
+        os.remove(table)
+    except Exception:
+        ...
+
+
 async def get_block_user(msg: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str):
     try:
         user_data = int(text)
