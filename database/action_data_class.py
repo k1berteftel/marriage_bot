@@ -580,8 +580,7 @@ class DataInteraction():
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
-                        print(watch.view, datetime.datetime.today() - datetime.timedelta(days=2))
-                        if watch.view < datetime.datetime.today() - datetime.timedelta(days=2):
+                        if watch.view.replace(tzinfo=None) < datetime.datetime.today() - datetime.timedelta(days=2):
                             await self.del_watch(watch.id)
                             search.append(form.id)
         return search
@@ -610,8 +609,7 @@ class DataInteraction():
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
-                        print(watch.view, datetime.datetime.today() - datetime.timedelta(days=2))
-                        if watch.view < datetime.datetime.today() - datetime.timedelta(days=2):
+                        if watch.view.replace(tzinfo=None) < datetime.datetime.today() - datetime.timedelta(days=2):
                             await self.del_watch(watch.id)
                             search.append(form.id)
         if not search:
@@ -649,7 +647,7 @@ class DataInteraction():
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
-                        if watch.view < datetime.datetime.today() - datetime.timedelta(days=2):
+                        if watch.view.replace(tzinfo=None) < datetime.datetime.today() - datetime.timedelta(days=2):
                             await self.del_watch(watch.id)
                             search.append(form.id)
                         break
