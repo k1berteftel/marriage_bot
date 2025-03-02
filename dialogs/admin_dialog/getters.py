@@ -95,7 +95,7 @@ async def set_access(msg: Message, widget: ManagedTextInput, dialog_manager: Dia
     if type == 'vip':
         await session.update_vip(user_id, vip=True)
         await msg.answer('Вип статус был успешно выдан')
-    elif type == 'super_vip':
+    elif type == 'super':
         await session.set_super_vip(user_id, date)
         await msg.answer('Super-vip статус был успешно выдан')
     else:
