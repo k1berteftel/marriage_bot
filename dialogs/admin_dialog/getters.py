@@ -753,7 +753,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
         if user.active:
             active += 1
         for day in range(0, 3):
-            print(user.entry.date(), (datetime.datetime.today() - datetime.timedelta(days=day)).date())
+            #print(user.entry.date(), (datetime.datetime.today() - datetime.timedelta(days=day)).date())
             if user.entry.date() == (datetime.datetime.today() - datetime.timedelta(days=day)).date():
                 if day == 0:
                     entry['today'] = entry.get('today') + 1

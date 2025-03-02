@@ -610,6 +610,7 @@ class DataInteraction():
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
+                        print(watch.view, datetime.datetime.today() - datetime.timedelta(days=2))
                         if watch.view < datetime.datetime.today() - datetime.timedelta(days=2):
                             await self.del_watch(watch.id)
                             search.append(form.id)
