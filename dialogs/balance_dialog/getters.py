@@ -195,7 +195,7 @@ async def get_derive_amount(msg: Message, widget: ManagedTextInput, dialog_manag
         return
     text = (f'<b>Заявка на вывод средств от пользователя {msg.from_user.id}</b>\n'
             f'Данные по заявке:\n - Сумма для вывода: {amount}\n - Юзернейм пользователя: {msg.from_user.username}')
-    for admin_id in config.bot.admin_ids:
+    for admin_id in [6336087289]:
         await msg.bot.send_message(
             chat_id=admin_id,
             text=text,

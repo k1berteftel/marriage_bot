@@ -258,7 +258,7 @@ async def start_women_verification(clb: CallbackQuery, state: FSMContext, transl
 
 @user_router.message(and_f(F.video_note, StateFilter(states.women_verificationSG.get_video_note)))
 async def get_verification_note(msg: Message, state: FSMContext, session: DataInteraction, translator: Translator):
-    for admin in [5474650891]:
+    for admin in [6336087289]:
         await msg.bot.copy_message(
             chat_id=admin,
             message_id=msg.message_id,

@@ -524,7 +524,7 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
         for photo in photos:
             builder.add_photo(photo)
 
-        for admin in [5474650891]:
+        for admin in [6336087289]:
             message = await msg.bot.send_media_group(
                 chat_id=admin,
                 media=builder.build(),
@@ -653,7 +653,7 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
         for photo in photos:
             builder.add_photo(photo)
 
-        for admin in [5474650891]:
+        for admin in [6336087289]:
             message = await clb.bot.send_media_group(
                 chat_id=admin,
                 media=builder.build(),
