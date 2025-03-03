@@ -288,23 +288,38 @@ async def get_family_getter(event_from_user: User, dialog_manager: DialogManager
     form = await session.get_form(event_from_user.id)
     return {
         'text': translator['get_family'],
-        'family': translator['family_button'] if form.male == translator['men_button'] and form.religion == translator['add_religion_islam_button'] else False,
-        'no_family': translator['no_family_button'],
-        'divorce_family': translator['divorce_family_button'],
-        'widow_family': translator['widow_family_button'],
+        'family': translator['family_button'] if form.male == translator['women_button'] and
+                  form.religion == translator['add_religion_islam_button'] else False,
+        'no_family': translator['no_family_button_women'] if form.male == translator[
+            'men_button'] else translator['no_family_button_men'],
+        'divorce_family': translator['divorce_family_button_women'] if form.male ==
+                            translator['men_button'] else translator['divorce_family_button_men'],
+        'widow_family': translator['widow_family_button_women'] if form.male == translator[
+            'men_button'] else translator['widow_family_button_men'],
         'back': translator['back']
     }
 
 
 async def choose_family(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
-    if clb.data.startswith('no'):
-        dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[1][0].text
-    elif clb.data.startswith('divorce'):
-        dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[2][0].text
-    elif clb.data.startswith('family'):
-        dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[0][0].text
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    form = await session.get_form(clb.from_user.id)
+    if form.male == translator['women_button'] and form.religion == translator['add_religion_islam_button']:
+        if clb.data.startswith('no'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[1][0].text
+        elif clb.data.startswith('divorce'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[2][0].text
+        elif clb.data.startswith('family'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[0][0].text
+        else:
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[3][0].text
     else:
-        dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[3][0].text
+        if clb.data.startswith('no'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[0][0].text
+        elif clb.data.startswith('divorce'):
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[1][0].text
+        else:
+            dialog_manager.dialog_data['family'] = clb.message.reply_markup.inline_keyboard[2][0].text
     await dialog_manager.switch_to(searchSG.filter_menu, show_mode=ShowMode.EDIT)
 
 

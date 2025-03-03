@@ -324,6 +324,19 @@ async def card_pay_getter(event_from_user: User, dialog_manager: DialogManager, 
                 'hours': dialog_manager.dialog_data.get('hours')},
         seconds=5
     )
+    job = scheduler.get_job(job_id=f'last_payment_{event_from_user.id}')
+    if job:
+        job.remove()
+    scheduler.add_job(
+        check_payment,
+        'interval',
+        args=[payment.id, event_from_user.id, bot, scheduler, session, translator],
+        id=f'last_payment_{event_from_user.id}',
+        kwargs={'tokens': dialog_manager.dialog_data.get('tokens'), 'amount': amount,
+                'type': type, 'date': relativedelta(days=days) if days else None,
+                'hours': dialog_manager.dialog_data.get('hours'), 'last': True},
+        minutes=9
+    )
     return {
         'text': translator['get_pay'],
         'url': url,

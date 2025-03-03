@@ -206,7 +206,11 @@ async def check_payment(payment_id: any, user_id: int, bot: Bot, scheduler: Asyn
             await session.add_transaction(referral.user_id, int(round(amount * 0.5)), 'Реферальные зачисления')
             await session.update_income(referral.user_id, int(round(amount * 0.5)))
         await bot.send_message(chat_id=user_id, text=translator['success_payment'])
-        scheduler.remove_job(job_id=f'payment_{user_id}')
+        job = scheduler.get_job(job_id=f'payment_{user_id}')
+        if job:
+            scheduler.remove_job(job_id=f'payment_{user_id}')
+    if kwargs.get('last'):
+        scheduler.remove_job(job_id=f'last_payment_{user_id}')
     return
 
 
