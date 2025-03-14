@@ -576,7 +576,8 @@ class DataInteraction():
         watches_form_ids = [watch.form_id for watch in watches]
         for form in forms:
             if form.id not in watches_form_ids:
-                search.append(form.id)
+                if form.id not in search:
+                    search.append(form.id)
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
@@ -585,11 +586,12 @@ class DataInteraction():
                             search.append(form.id)
         return search
 
-    async def filter_forms(self, user_id: int, counter: int = 2, count=0) -> list[int] | None:
+    async def filter_forms(self, user_id: int, search: list[int] | None = None, counter: int = 2, count=0) -> list[int] | None:
+        if search is None:
+            search = []
         user = await self.get_user(user_id)
         form = await self.get_form(user_id)
         translator = create_translator(user.locale)
-        search = []
         async with self._sessions() as session:
             stmt = select(FormTable).where(
                 and_(
@@ -605,7 +607,8 @@ class DataInteraction():
         watches_form_ids = [watch.form_id for watch in watches]
         for form in forms:
             if form.id not in watches_form_ids:
-                search.append(form.id)
+                if form.id not in search:
+                    search.append(form.id)
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
@@ -614,10 +617,11 @@ class DataInteraction():
                             search.append(form.id)
         if not search:
             search = await self.filter_forms_without_city(user_id, counter, search)
-        if not search and count == 4:
+        if count == 5:
+            return search
+        if not search and count == 5:
             return None
-        if not search:
-            search = await self.filter_forms(user_id, counter + 2, count+1)
+        search = await self.filter_forms(user_id, search=search, counter=counter + 2, count=count+1)
         return search
 
     async def filter_forms_by_params(self, user_id: int, **kwargs) -> list[int] | None:
