@@ -34,7 +34,7 @@ def get_search_keyboard(translator: Translator, form_user_id: int):
                 InlineKeyboardButton(text=translator['form_info_button'], callback_data=f'help_info')
             ],
             [
-                InlineKeyboardButton(text=translator['balance_button'], callback_data='start_filter_dialog'),
+                InlineKeyboardButton(text=translator['filter_button'], callback_data='start_filter_dialog'),
             ]
         ]
     )
