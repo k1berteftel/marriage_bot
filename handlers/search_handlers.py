@@ -73,11 +73,13 @@ async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translato
         text=text,
         reply_markup=get_search_keyboard(translator, form_user_id=form.user_id)
     )
+    await clb.answer()
     await session.add_watch(clb.from_user.id, form.id)
 
 
 @search_router.callback_query(F.data.startswith('contact'))
 async def send_contact_data(clb: CallbackQuery, state: FSMContext, translator: Translator, session: DataInteraction):
+    await clb.answer()
     user = await session.get_user(clb.from_user.id)
     form_user_id = int(clb.data.split('_')[1])
     if user.super_vip:
@@ -96,6 +98,7 @@ async def send_contact_data(clb: CallbackQuery, state: FSMContext, translator: T
 
 @search_router.callback_query(F.data == 'help_info')
 async def send_help_info(clb: CallbackQuery, translator: Translator, session: DataInteraction):
+    await clb.answer()
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[[InlineKeyboardButton(text=translator['close_info_button'], callback_data='close_info')]]
     )
@@ -118,6 +121,7 @@ async def send_complain(clb: CallbackQuery, state: FSMContext, translator: Trans
         inline_keyboard=[[InlineKeyboardButton(text=translator['back'], callback_data='back_search')]]
     )
     await clb.message.answer(translator['get_complain'], reply_markup=keyboard)
+    await clb.answer()
 
 
 @search_router.message(StateFilter(searchSG.get_complain))
@@ -208,6 +212,27 @@ async def send_contact(clb: CallbackQuery, session: DataInteraction, translator,
         chat_id=sender.user_id,
         text=translator['success_alien_request'].format(form=text, username=clb.from_user.username)
     )
+    await clb.answer()
     await session.update_tokens(clb.from_user.id, -price)
+
+
+@search_router.callback_query(F.data == 'start_filter_dialog')
+async def start_filter_menu_dialog(clb: CallbackQuery, dialog_manager: DialogManager, session: DataInteraction, translator: Translator, scheduler: AsyncIOScheduler):
+    await clb.answer()
+    if dialog_manager.has_context():
+        await dialog_manager.done()
+    user = await session.get_user(clb.from_user.id)
+    if not user.vip:
+        message = await clb.message.answer(translator['vip_filter_only_warning'])
+        job_id = get_random_id()
+        scheduler.add_job(
+            del_message,
+            'interval',
+            args=[message, scheduler, job_id],
+            seconds=7,
+            id=job_id
+        )
+        return
+    await dialog_manager.start(searchSG.filter_menu, mode=StartMode.RESET_STACK)
 
 

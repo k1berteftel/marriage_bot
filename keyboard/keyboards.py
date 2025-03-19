@@ -13,11 +13,8 @@ def get_start_keyboard(translator: Translator, admin: bool):
                 KeyboardButton(text=translator['filter_button'])
             ],
             [
-                KeyboardButton(text=translator['balance_button']),
+                KeyboardButton(text=translator['help_button']),
                 KeyboardButton(text=translator['info_button']),
-            ],
-            [
-                KeyboardButton(text=translator['help_button'])
             ]
         ]
     if admin:
@@ -35,6 +32,9 @@ def get_search_keyboard(translator: Translator, form_user_id: int):
             [
                 InlineKeyboardButton(text=translator['contact_form_button'], callback_data=f'contact_{form_user_id}'),
                 InlineKeyboardButton(text=translator['form_info_button'], callback_data=f'help_info')
+            ],
+            [
+                InlineKeyboardButton(text=translator['balance_button'], callback_data='start_filter_dialog'),
             ]
         ]
     )

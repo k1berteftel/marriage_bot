@@ -167,7 +167,7 @@ form_dialog = Dialog(
             func=getters.get_photo_1
         ),
         SwitchTo(Format('{back}'), id='back_get_leave', state=formSG.get_leave),
-        Button(Format('{skip}'), id='skip_get_photos', on_click=getters.skip_get_photos),
+        #Button(Format('{skip}'), id='skip_get_photos', on_click=getters.skip_get_photos),
         getter=getters.get_photo_1_getter,
         state=formSG.get_photo_1
     ),
