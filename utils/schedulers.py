@@ -245,7 +245,7 @@ async def start_schedulers(session: DataInteraction, scheduler: AsyncIOScheduler
         if user.vip_end and user.vip_end.timestamp() < datetime.today().timestamp():
             await session.update_vip(user.user_id, vip=False, vip_end=None)
             continue
-        if user.vip and user.vip_end.timestamp() > datetime.today().timestamp():
+        if user.vip and user.vip_end and user.vip_end.timestamp() > datetime.today().timestamp():
             scheduler.add_job(
                 check_vip,
                 'interval',
