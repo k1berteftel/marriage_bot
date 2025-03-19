@@ -561,7 +561,8 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
             if application:
                 try:
                     for msg_id in application.message_ids:
-                        await msg.bot.delete_message(chat_id=5474650891, message_id=msg_id)
+                        await msg.bot.delete_message(chat_id=6336087289, message_id=msg_id)
+                    await msg.bot.delete_message(chat_id=6336087289, message_id=application.message_ids[-1] + 1)
                 except Exception as err:
                     ...
                 await session.del_application(msg.from_user.id)
@@ -689,7 +690,8 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
             if application:
                 try:
                     for msg_id in application.message_ids:
-                        await clb.bot.delete_message(chat_id=5474650891, message_id=msg_id)
+                        await clb.bot.delete_message(chat_id=6336087289, message_id=msg_id)
+                    await clb.bot.delete_message(chat_id=6336087289, message_id=application.message_ids[-1] + 1)
                 except Exception as err:
                     ...
                 await session.del_application(clb.from_user.id)

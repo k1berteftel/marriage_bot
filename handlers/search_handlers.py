@@ -125,6 +125,10 @@ async def get_complain(msg: Message, state: FSMContext, translator: Translator, 
     datas = await state.get_data()
     form_user_id = datas['form_user_id']
     await session.add_complain(msg.from_user.id, form_user_id, msg.text if msg.text else msg.caption)
+    try:
+        await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=msg.message_id - 1)
+    except Exception:
+        ...
     message = await msg.answer(translator['success_complain_add'])
     job_id = get_random_id()
     scheduler.add_job(

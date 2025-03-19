@@ -9,6 +9,8 @@ from custom_filters.filters import StartDialogFilter
 from keyboard.keyboards import get_start_keyboard, get_check_note_keyboard
 from database.action_data_class import DataInteraction
 from states import state_groups as states
+from utils.build_ids import get_random_id
+from utils.schedulers import del_message
 from utils.text_utils import get_age_text
 from utils.translator.translator import Translator
 from config_data.config import load_config, Config
@@ -210,6 +212,40 @@ async def start_help_dialog(msg: Message, dialog_manager: DialogManager, session
         except Exception:
             ...
     await dialog_manager.start(states.helpSG.start, mode=StartMode.RESET_STACK)
+
+
+@user_router.message(StartDialogFilter('filter_button'))
+async def start_filter_menu_dialog(msg: Message, dialog_manager: DialogManager, session: DataInteraction, translator: Translator, scheduler: AsyncIOScheduler):
+    job = scheduler.get_job(job_id=f'payment_{msg.from_user.id}')
+    if job:
+        job.remove()
+    if not await session.check_form(msg.from_user.id):
+        keyboard = InlineKeyboardMarkup(
+            inline_keyboard=[[InlineKeyboardButton(text=translator['registration_button'], callback_data='registration')]]
+        )
+        await msg.answer(translator['no_form_warning'], reply_markup=keyboard)
+        return
+    await msg.delete()
+    if dialog_manager.has_context():
+        await dialog_manager.done()
+        try:
+            await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=msg.message_id - 1)
+        except Exception:
+            ...
+    user = await session.get_user(msg.from_user.id)
+    if not user.vip:
+        message = await msg.answer(translator['vip_filter_only_warning'])
+        job_id = get_random_id()
+        scheduler.add_job(
+            del_message,
+            'interval',
+            args=[message, scheduler, job_id],
+            seconds=7,
+            id=job_id
+        )
+        return
+    await dialog_manager.start(states.searchSG.filter_menu, mode=StartMode.RESET_STACK)
+
 
 
 @user_router.message(Command('help'))

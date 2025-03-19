@@ -10,12 +10,15 @@ def get_start_keyboard(translator: Translator, admin: bool):
             ],
             [
                 KeyboardButton(text=translator['requests_button']),
-                KeyboardButton(text=translator['balance_button'])
+                KeyboardButton(text=translator['filter_button'])
             ],
             [
+                KeyboardButton(text=translator['balance_button']),
                 KeyboardButton(text=translator['info_button']),
-                KeyboardButton(text=translator['help_button'])
             ],
+            [
+                KeyboardButton(text=translator['help_button'])
+            ]
         ]
     if admin:
         keyboard.append([KeyboardButton(text='Админ панель')])
@@ -49,6 +52,9 @@ def get_check_photo_keyboard(user_id: int):
             ],
             [
                 InlineKeyboardButton(text='Заблокировать', callback_data=f'block_user|{user_id}')
+            ],
+            [
+                InlineKeyboardButton(text='Заполнить акнету заново!', callback_data=f'send_warning|{user_id}')
             ]
         ]
     )

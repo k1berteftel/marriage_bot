@@ -2,7 +2,7 @@ import datetime
 
 import uuid
 from aiogram import Bot
-from aiogram.types import CallbackQuery, User, Message, ContentType
+from aiogram.types import CallbackQuery, User, Message, ContentType, InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice
 from aiogram.fsm.context import FSMContext
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.api.entities import MediaAttachment
@@ -351,6 +351,48 @@ async def back_choose_payment(clb: CallbackQuery, widget: Button, dialog_manager
     if job:
         job.remove()
     await dialog_manager.switch_to(balanceSG.choose_payment_menu)
+
+
+async def crypto_payment(clb: CallbackQuery, widget: Button, dialog_manager: DialogManager):
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    amount = dialog_manager.dialog_data.get('price')
+    type = dialog_manager.dialog_data.get('type')
+    if type == 'rate':
+        description = "Покупка токенов в боте"
+    elif type == 'super_vip':
+        description = "Приобретение super vip в боте"
+    elif type == 'boost':
+        description = "Буст анкеты"
+    else:
+        description = "Приобретение vip в боте"
+    hours = dialog_manager.dialog_data.get('hours')
+    days = dialog_manager.dialog_data.get('days')
+    tokens = dialog_manager.dialog_data.get('tokens')
+    if hours:
+        type += f'_{hours}'
+    elif days:
+        type += f'_{days}'
+    else:
+        type += f'_{tokens}'
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=translator['url_button'], pay=True)],
+            [InlineKeyboardButton(text=translator['back'], callback_data='back|payment_menu')]
+        ]
+    )
+    await dialog_manager.done()
+    await clb.message.delete()
+    price = int(round(amount / 1.7, 0))
+    prices = [LabeledPrice(label="XTR", amount=price)]
+    await clb.message.answer_invoice(
+        title=translator['payment_widget'],
+        description=description,
+        prices=prices,
+        provider_token="",
+        payload=type,
+        currency="XTR",
+        reply_markup=keyboard
+    )
 
 
 async def crypto_pay_getter(dialog_manager: DialogManager, **kwargs):

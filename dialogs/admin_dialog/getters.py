@@ -66,10 +66,13 @@ async def get_block_user(msg: Message, widget: ManagedTextInput, dialog_manager:
         return
     cache: TTLCache = dialog_manager.middleware_data.get('cache')
     translator: Translator = create_translator(user.locale)
-    await msg.bot.send_message(
-        chat_id=user.user_id,
-        text=translator['block_message']
-    )
+    try:
+        await msg.bot.send_message(
+            chat_id=user.user_id,
+            text=translator['block_message']
+        )
+    except Exception:
+        await session.set_active(user.user_id, 0)
     await session.set_block(user.user_id)
     await session.del_form(user.user_id)
     user = await session.get_user(user.user_id)
@@ -632,10 +635,13 @@ async def block_user(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
     complain = complains[page]
     user = await session.get_user(complain.form_user_id)
     translator: Translator = create_translator(user.locale)
-    await clb.bot.send_message(
-        chat_id=user.user_id,
-        text=translator['block_message']
-    )
+    try:
+        await clb.bot.send_message(
+            chat_id=user.user_id,
+            text=translator['block_message']
+        )
+    except Exception:
+        await session.set_active(user.user_id, 0)
 
     await session.set_block(user.user_id)
     await session.del_form(user.user_id)
@@ -799,10 +805,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             if form.male == translator['women_button']:
                 women += 1
 
-    sum = 0
     for transaction in transactions:
-        if transaction.description == 'Пополнение баланса':
-            sum += transaction.sum
         if transaction.description == 'Покупка токенов':
             tokens_sum += transaction.sum
             if transaction.user_id not in tokens_on:
@@ -815,7 +818,6 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             f'бота: {len(users) - active}\n - Провзаимодействовали с ботом за последние 24 часа: {activity}\n\n'
             f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - За вчерашний день: +{entry.get("yesterday")}'
             f'\n - Позавчера: + {entry.get("2_day_ago")}\n\n<b>Покупки:</b>\n - Людей купил vip: {vips}\n'
-            f' - Сумма пополнений за все время: {sum}\n'
             f' - Купили токенов(всего): {tokens_sum}\n - Людей купивших токены: {len(tokens_on)}\n\n'
             f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}\n - Мужских анкет: {men}\n - Женских: {women}')
     await clb.message.answer(text=text)

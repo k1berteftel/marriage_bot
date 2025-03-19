@@ -241,9 +241,11 @@ async def start_schedulers(session: DataInteraction, scheduler: AsyncIOScheduler
     users: list[UsersTable] = await session.get_vip_users()
     print(len(users))
     for user in users:
-        print(user.user_id, user.vip, user.vip_end, sep=' -- ')
         translator: Translator = load_Translator(user.locale)
-        if (await check_vip(bot, user.user_id, session, translator, scheduler)) == False:
+        if user.vip_end and user.vip_end.timestamp() < datetime.today().timestamp():
+            await session.update_vip(user.user_id, vip=False, vip_end=None)
+            continue
+        if user.vip and user.vip_end.timestamp() > datetime.today().timestamp():
             scheduler.add_job(
                 check_vip,
                 'interval',

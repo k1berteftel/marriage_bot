@@ -19,6 +19,7 @@ from config_data.config import load_config, Config
 from handlers.user_handlers import user_router
 from handlers.search_handlers import search_router
 from handlers.admin_handlers import admin_router
+from handlers.payment_handlers import payment_router
 from dialogs import get_dialogs
 from middlewares import (BlockMiddleware, TransferObjectsMiddleware, RemindMiddleware,
                          OpMiddleware, ImpressionsMiddleware, SupportMiddleware)
@@ -57,12 +58,12 @@ async def main():
 
     bot = Bot(token=config.bot.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
-    #await start_schedulers(DataInteraction(session), scheduler, bot)
+    await start_schedulers(DataInteraction(session), scheduler, bot)
 
     dp = Dispatcher()  # storage=storage
 
     # подключаем роутеры
-    dp.include_routers(user_router, search_router, admin_router, *get_dialogs())
+    dp.include_routers(user_router, search_router, admin_router, payment_router, *get_dialogs())
 
     # подключаем middleware
     dp.message.outer_middleware(SupportMiddleware())

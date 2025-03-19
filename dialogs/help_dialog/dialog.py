@@ -13,7 +13,7 @@ help_dialog = Dialog(
     Window(
         Format('{text}'),
         Column(
-            Url(Format('{contact}'), id='contact_button', url=Const('https://t.me/SR_support_165')),
+            Url(Format('{contact}'), id='contact_button', url=Const('https://t.me/SR_support_me')),
         ),
         getter=start_getter,
         state=helpSG.start

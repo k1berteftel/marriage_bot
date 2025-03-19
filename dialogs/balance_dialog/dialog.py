@@ -96,7 +96,7 @@ balance_dialog = Dialog(
         Format('{text}'),
         Column(
             SwitchTo(Format('{card_pay}'), id='card_pay_switcher', state=balanceSG.card_payment),
-            SwitchTo(Format('{crypto_pay}'), id='crypto_pay_switcher', state=balanceSG.crypto_payment),
+            #Button(Format('{crypto_pay}'), id='crypto_pay_switcher', on_click=getters.crypto_payment),
         ),
         SwitchTo(Format('{back}'), id='back', state=balanceSG.start),
         getter=getters.choose_payment_getter,

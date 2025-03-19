@@ -172,3 +172,7 @@ class targetingSG(StatesGroup):
 
 class women_verificationSG(StatesGroup):
     get_video_note = State()
+
+
+class warningSG(StatesGroup):
+    get_warning = State()

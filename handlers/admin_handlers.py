@@ -1,6 +1,6 @@
 from aiogram import Router, F, Bot
 from aiogram.fsm.context import FSMContext
-from aiogram.filters import CommandStart, StateFilter
+from aiogram.filters import CommandStart, StateFilter, and_f
 from aiogram.types import Message, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, ChatMemberUpdated
 from aiogram_dialog import DialogManager, StartMode
 from cachetools import TTLCache
@@ -9,7 +9,7 @@ from keyboard.keyboards import get_search_keyboard
 from utils.text_utils import get_age_text
 from database.action_data_class import DataInteraction
 from config_data.config import Config, load_config
-from states.state_groups import adminSG
+from states.state_groups import adminSG, warningSG
 from utils.translator.translator import Translator
 from utils.translator import Translator as create_translator
 
@@ -40,16 +40,50 @@ async def revoke_messages(clb: CallbackQuery, session: DataInteraction, translat
     user_id = int(clb.data.split('|')[1])
     application = await session.get_application(user_id)
     await session.del_application(user_id)
-    await clb.bot.send_message(
-        chat_id=user_id,
-        text=translator['photos_warning_message']
-    )
     await clb.message.delete()
     try:
         for msg_id in application.message_ids:
             await clb.bot.delete_message(chat_id=clb.from_user.id, message_id=msg_id)
     except Exception as err:
         ...
+    await clb.bot.send_message(
+        chat_id=user_id,
+        text=translator['photos_warning_message']
+    )
+
+
+@admin_router.callback_query(F.data.startswith('send_warning'))
+async def send_warning(clb: CallbackQuery, session: DataInteraction, translator: Translator, state: FSMContext):
+    user_id = int(clb.data.split('|')[1])
+    await state.set_state(warningSG.get_warning)
+    await state.update_data(user_id=user_id)
+    keyboard = InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text='Назад', callback_data='close_get_warning')]])
+    await clb.message.answer('Отправьте сообщение которое отобразиться пользователю', reply_markup=keyboard)
+
+
+@admin_router.message(and_f(F.text, StateFilter(warningSG.get_warning)))
+async def get_warning(msg: Message, session: DataInteraction, translator: Translator, state: FSMContext):
+    data = await state.get_data()
+    user_id = data.get("user_id")
+    await msg.delete()
+    try:
+        await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=msg.message_id - 1)
+    except Exception:
+        ...
+    application = await session.get_application(user_id)
+    await session.del_application(user_id)
+    try:
+        for msg_id in application.message_ids:
+            await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=msg_id)
+        await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=application.message_ids[-1] + 1)
+    except Exception as err:
+        ...
+    await session.del_form(user_id)
+    try:
+        await msg.bot.send_message(chat_id=user_id, text=translator['again_create_warning'] + msg.text)
+    except Exception:
+        await session.set_active(user_id, 0)
+    await state.clear()
 
 
 @admin_router.callback_query(F.data.startswith('derive'))
@@ -145,10 +179,13 @@ async def block_user(clb: CallbackQuery, session: DataInteraction, cache: TTLCac
         ...
     user = await session.get_user(user_id)
     translator: Translator = create_translator(user.locale)
-    await clb.bot.send_message(
-        chat_id=user.user_id,
-        text=translator['block_message']
-    )
+    try:
+        await clb.bot.send_message(
+            chat_id=user.user_id,
+            text=translator['block_message']
+        )
+    except Exception:
+        await session.set_active(user.user_id, 0)
 
     await session.set_block(user.user_id)
     await session.del_form(user.user_id)

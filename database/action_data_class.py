@@ -617,7 +617,7 @@ class DataInteraction():
                             search.append(form.id)
         if not search:
             search = await self.filter_forms_without_city(user_id, counter, search)
-        if count == 5:
+        if count == 8:
             return search
         if not search and count == 5:
             return None
