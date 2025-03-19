@@ -10,9 +10,10 @@ def get_start_keyboard(translator: Translator, admin: bool):
             ],
             [
                 KeyboardButton(text=translator['requests_button']),
-                KeyboardButton(text=translator['help_button']),
+                KeyboardButton(text=translator['balance_button'])
             ],
             [
+                KeyboardButton(text=translator['help_button']),
                 KeyboardButton(text=translator['info_button']),
             ]
         ]
