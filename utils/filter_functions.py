@@ -2,7 +2,16 @@ from database.action_data_class import DataInteraction
 from database.model import FormTable, UsersTable
 
 
-async def sort_forms(forms: list[int], session: DataInteraction) -> list[int]:
+async def sort_forms(forms: list[int], session: DataInteraction, owner_age: int) -> list[int]:
+    place = 0
+    for i in range(0, 17, 2):
+        for j in range(place, len(forms)):
+            form = await session.get_form_by_id(forms[j])
+            if form.age in range(owner_age - i, owner_age + i):
+                elem = forms.pop(j)
+                forms.insert(place, elem)
+                place += 1
+
     n = len(forms)
     for i in range(n):
         for j in range(0, n-i-1):

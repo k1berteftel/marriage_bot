@@ -10,7 +10,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from utils.filter_functions import sort_forms
 from utils.build_ids import get_random_id
 from utils.schedulers import del_message
-from keyboard.keyboards import get_search_keyboard
+from keyboard.keyboards import get_search_keyboard, get_basic_search_keyboard
 from utils.text_utils import get_age_text
 from database.action_data_class import DataInteraction
 from states.state_groups import searchSG
@@ -22,8 +22,13 @@ search_router = Router()
 
 @search_router.callback_query(F.data == 'next')
 async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translator, session: DataInteraction, scheduler: AsyncIOScheduler):
-    forms = (await state.get_data()).get('forms')
+    data = await state.get_data()
+    forms = data.get('forms')
     if not forms:
+        if data.get('filter'):
+            keyboard = await get_basic_search_keyboard(translator)
+            await clb.message.answer(translator['no_filter_forms'], reply_markup=keyboard)
+            return
         forms = await session.filter_forms(user_id=clb.from_user.id)
         if not forms:
             forms = await session.filter_forms(user_id=clb.from_user.id, counter=4)
@@ -38,7 +43,8 @@ async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translato
                 id=job_id
             )
             return
-        forms = await sort_forms(forms, session)
+        user_form = await session.get_form(clb.from_user.id)
+        forms = await sort_forms(forms, session, user_form.age)
     form = await session.get_form_by_id(forms[0])
     forms.pop(0)
     user = await session.get_user(form.user_id)

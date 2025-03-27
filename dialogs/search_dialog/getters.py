@@ -47,7 +47,8 @@ async def search_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
         )
         await dialog_manager.switch_to(searchSG.start, show_mode=ShowMode.DELETE_AND_SEND)
         return
-    forms = await sort_forms(forms, session)
+    user_form = await session.get_form(clb.from_user.id)
+    forms = await sort_forms(forms, session, user_form.age)
     form = await session.get_form_by_id(forms[0])
     forms.pop(0)
     user = await session.get_user(form.user_id)
@@ -125,7 +126,7 @@ async def filter_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
     forms.pop(0)
     user = await session.get_user(form.user_id)
     await state.set_state(searchSG.search_menu)
-    await state.set_data({'forms': forms})
+    await state.set_data({'forms': forms, 'filter': True})
     text = translator['form'].format(
             name=form.name,
             male=form.male,

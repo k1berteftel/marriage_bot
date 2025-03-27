@@ -90,3 +90,13 @@ def get_check_note_keyboard(user_id: int):
     )
     return keyboard
 
+
+async def get_basic_search_keyboard(translator: Translator):
+    keyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [InlineKeyboardButton(text=translator['basic_search_button'], callback_data='next')],
+            [InlineKeyboardButton(text=translator['filter_search_button'], callback_data='start_filter_dialog')]
+        ]
+    )
+    return keyboard
+

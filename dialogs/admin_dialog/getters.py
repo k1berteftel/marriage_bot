@@ -816,7 +816,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
     text = (f'<b>Статистика на {datetime.datetime.today().strftime('%d-%m-%Y')}</b>\n\nВсего пользователей: {len(users)}'
             f'\n - Активные пользователи(не заблокировали бота): {active}\n - Пользователей заблокировали '
             f'бота: {len(users) - active}\n - Провзаимодействовали с ботом за последние 24 часа: {activity}\n\n'
-            f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - За вчерашний день: +{entry.get("yesterday")}'
+            f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - Вчера: +{entry.get("yesterday")}'
             f'\n - Позавчера: + {entry.get("2_day_ago")}\n\n<b>Покупки:</b>\n - Людей купил vip: {vips}\n'
             f' - Купили токенов(всего): {tokens_sum}\n - Людей купивших токены: {len(tokens_on)}\n\n'
             f'<b>Анкеты</b>\n - Зарегестрированных анкет: {len(forms)}\n - Мужских анкет: {men}\n - Женских: {women}')

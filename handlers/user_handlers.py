@@ -352,7 +352,10 @@ async def open_ref_menu(clb: CallbackQuery, dialog_manager: DialogManager, sessi
         )
         await clb.message.answer(translator['no_form_warning'], reply_markup=keyboard)
         return
-    await clb.message.delete()
+    try:
+        await clb.message.delete()
+    except Exception:
+        ...
     if dialog_manager.has_context():
         await dialog_manager.done()
         try:
