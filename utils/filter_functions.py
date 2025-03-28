@@ -4,7 +4,7 @@ from database.model import FormTable, UsersTable
 
 async def sort_forms(forms: list[int], session: DataInteraction, owner_age: int) -> list[int]:
     place = 0
-    for i in range(0, 17, 2):
+    for i in range(0, 17):
         for j in range(place, len(forms)):
             form = await session.get_form_by_id(forms[j])
             if form.age in range(owner_age - i, owner_age + i):
