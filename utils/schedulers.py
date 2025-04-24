@@ -16,7 +16,7 @@ from yookassa.payment import PaymentResponse
 
 async def check_form_boost(bot: Bot, user_id: int, session: DataInteraction, scheduler: AsyncIOScheduler, translator: Translator):
     form = await session.get_form(user_id)
-    if datetime.today().timestamp() > form.boost.timestamp():
+    if datetime.now().timestamp() > form.boost.timestamp():
         await bot.send_message(
             chat_id=user_id,
             text=translator['boost_off']
@@ -27,7 +27,7 @@ async def check_form_boost(bot: Bot, user_id: int, session: DataInteraction, sch
 
 async def check_super_vip(bot: Bot, user_id: int, session: DataInteraction, scheduler: AsyncIOScheduler, translator: Translator):
     user = await session.get_user(user_id)
-    if datetime.today().timestamp() > user.super_vip.timestamp():
+    if datetime.now().timestamp() > user.super_vip.timestamp():
         await bot.send_message(
             chat_id=user_id,
             text=translator['super_vip_off']
@@ -39,7 +39,7 @@ async def check_super_vip(bot: Bot, user_id: int, session: DataInteraction, sche
 async def check_vip(bot: Bot, user_id: int, session: DataInteraction, translator: Translator,  scheduler: AsyncIOScheduler):
     user = await session.get_user(user_id)
     print(user.vip_end)
-    if user.vip_end.timestamp() < datetime.today().timestamp():
+    if user.vip_end.timestamp() < datetime.now().timestamp():
         job = scheduler.get_job(job_id=str(user_id))
         if job:
             job.remove()
@@ -50,7 +50,7 @@ async def check_vip(bot: Bot, user_id: int, session: DataInteraction, translator
         await session.update_vip(user_id, False, vip_end=None)
         return False
     else:
-        if (user.vip_end - datetime.today()).days == 1:
+        if (user.vip_end - datetime.now()).days == 1:
             await bot.send_message(
                 chat_id=user_id,
                 text=translator['alert_about_vip_end']
@@ -115,7 +115,7 @@ async def check_payment(payment_id: any, user_id: int, bot: Bot, scheduler: Asyn
                     minutes=30
                 )
             else:
-                date = datetime.today() + relativedelta(hours=hours)
+                date = datetime.now() + relativedelta(hours=hours)
                 await session.set_super_vip(user_id, date)
                 scheduler.add_job(
                     check_super_vip,
@@ -149,7 +149,7 @@ async def check_payment(payment_id: any, user_id: int, bot: Bot, scheduler: Asyn
                     minutes=30
                 )
             else:
-                await session.set_form_boost(user_id, datetime.today() + relativedelta(hours=hours))
+                await session.set_form_boost(user_id, datetime.now() + relativedelta(hours=hours))
                 scheduler.add_job(
                     check_form_boost,
                     trigger='interval',
@@ -169,7 +169,7 @@ async def check_payment(payment_id: any, user_id: int, bot: Bot, scheduler: Asyn
         else:
             date = kwargs.get('date')
             if not user.vip:
-                await session.update_vip(user_id, True, vip_end=datetime.today() + date)
+                await session.update_vip(user_id, True, vip_end=datetime.now() + date)
                 if not scheduler.get_job(str(user_id)):
                     scheduler.add_job(
                         check_vip,
@@ -242,10 +242,10 @@ async def start_schedulers(session: DataInteraction, scheduler: AsyncIOScheduler
     print(len(users))
     for user in users:
         translator: Translator = load_Translator(user.locale)
-        if user.vip_end and user.vip_end.timestamp() < datetime.today().timestamp():
+        if user.vip_end and user.vip_end.timestamp() < datetime.now().timestamp():
             await session.update_vip(user.user_id, vip=False, vip_end=None)
             continue
-        if user.vip and user.vip_end and user.vip_end.timestamp() > datetime.today().timestamp():
+        if user.vip and user.vip_end and user.vip_end.timestamp() > datetime.now().timestamp():
             scheduler.add_job(
                 check_vip,
                 'interval',

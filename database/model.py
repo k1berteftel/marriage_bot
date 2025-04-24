@@ -22,13 +22,13 @@ class UsersTable(Base):
     vip: Mapped[bool] = mapped_column(Boolean, default=False)
     super_vip: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=None, nullable=True)
     vip_end: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=None, nullable=True)
-    entry: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.today())
+    entry: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     locale: Mapped[str] = mapped_column(VARCHAR, nullable=True)
     referral: Mapped[int] = mapped_column(BigInteger, nullable=True, default=None)  # реферал
     refs: Mapped[int] = mapped_column(BigInteger, default=0)  # Кол-во зашедших рефералов
     income: Mapped[int] = mapped_column(Integer, default=0)  # Общий доход с рефералов
     active: Mapped[int] = mapped_column(Integer, default=1)
-    activity: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.today())
+    activity: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
     block: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
@@ -64,7 +64,7 @@ class WatchesTable(Base):
 
     user_id: Mapped[int] = mapped_column(BigInteger)
     form_id: Mapped[int] = mapped_column(BigInteger)
-    view: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.today())
+    view: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
 
 
 class TransactionsTable(Base):
@@ -75,7 +75,7 @@ class TransactionsTable(Base):
     user_id: Mapped[int] = mapped_column(BigInteger)
     sum: Mapped[int] = mapped_column(Integer)
     description: Mapped[str] = mapped_column(String, nullable=True)
-    create: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.today())
+    create: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
 
 
 class RequestsTable(Base):

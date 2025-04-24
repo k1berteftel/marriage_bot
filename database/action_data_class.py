@@ -433,7 +433,7 @@ class DataInteraction():
     async def set_activity(self, user_id: int):
         async with self._sessions() as session:
             await session.execute(update(UsersTable).where(UsersTable.user_id == user_id).values(
-                activity=datetime.datetime.today()
+                activity=datetime.datetime.now()
             ))
             await session.commit()
 
@@ -581,7 +581,7 @@ class DataInteraction():
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
-                        if watch.view.replace(tzinfo=None) < datetime.datetime.today() - datetime.timedelta(days=2):
+                        if watch.view.replace(tzinfo=None) < datetime.datetime.now() - datetime.timedelta(days=2):
                             await self.del_watch(watch.id)
                             search.append(form.id)
         return search
@@ -612,7 +612,7 @@ class DataInteraction():
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
-                        if watch.view.replace(tzinfo=None) < datetime.datetime.today() - datetime.timedelta(days=2):
+                        if watch.view.replace(tzinfo=None) < datetime.datetime.now() - datetime.timedelta(days=2):
                             await self.del_watch(watch.id)
                             search.append(form.id)
         if not search:
@@ -651,7 +651,7 @@ class DataInteraction():
             else:
                 for watch in watches:
                     if watch.form_id == form.id:
-                        if watch.view.replace(tzinfo=None) < datetime.datetime.today() - datetime.timedelta(days=2):
+                        if watch.view.replace(tzinfo=None) < datetime.datetime.now() - datetime.timedelta(days=2):
                             await self.del_watch(watch.id)
                             search.append(form.id)
                         break

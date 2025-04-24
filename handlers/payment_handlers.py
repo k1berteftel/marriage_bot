@@ -48,7 +48,7 @@ async def success_payment(msg: Message, session: DataInteraction, translator: Tr
                 minutes=30
             )
         else:
-            date = datetime.today() + relativedelta(hours=hours)
+            date = datetime.now() + relativedelta(hours=hours)
             await session.set_super_vip(msg.from_user.id, date)
             scheduler.add_job(
                 check_super_vip,
@@ -82,7 +82,7 @@ async def success_payment(msg: Message, session: DataInteraction, translator: Tr
                 minutes=30
             )
         else:
-            await session.set_form_boost(msg.from_user.id, datetime.today() + relativedelta(hours=hours))
+            await session.set_form_boost(msg.from_user.id, datetime.now() + relativedelta(hours=hours))
             scheduler.add_job(
                 check_form_boost,
                 trigger='interval',
@@ -102,7 +102,7 @@ async def success_payment(msg: Message, session: DataInteraction, translator: Tr
     else:
         date = relativedelta(days=int(type.split('_')[-1]))
         if not user.vip:
-            await session.update_vip(msg.from_user.id, True, vip_end=datetime.today() + date)
+            await session.update_vip(msg.from_user.id, True, vip_end=datetime.now() + date)
             if not scheduler.get_job(str(msg.from_user.id)):
                 scheduler.add_job(
                     check_vip,

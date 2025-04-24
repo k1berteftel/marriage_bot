@@ -355,7 +355,7 @@ async def start_malling(clb: CallbackQuery, widget: Button, dialog_manager: Dial
                 await session.set_active(user.user_id, 0)
         await clb.answer('Рассылка прошла успешно')
     else:
-        today = datetime.datetime.today()
+        today = datetime.datetime.now()
         date = datetime.datetime(year=today.year, month=today.month, day=today.day, hour=time[0], minute=time[1])
         scheduler.add_job(
             func=send_messages_targeting,

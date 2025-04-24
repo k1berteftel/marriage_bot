@@ -120,7 +120,7 @@ async def set_access(msg: Message, widget: ManagedTextInput, dialog_manager: Dia
         await msg.answer('Такого пользователя нету в базе данных бота')
         return
     type = dialog_manager.dialog_data.get('type')
-    date = datetime.datetime.today() + datetime.timedelta(days=30)
+    date = datetime.datetime.now() + datetime.timedelta(days=30)
     if type == 'vip':
         await session.update_vip(user_id, vip=True)
         await msg.answer('Вип статус был успешно выдан')
@@ -786,14 +786,14 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
             active += 1
         for day in range(0, 3):
             #print(user.entry.date(), (datetime.datetime.today() - datetime.timedelta(days=day)).date())
-            if user.entry.date() == (datetime.datetime.today() - datetime.timedelta(days=day)).date():
+            if user.entry.date() == (datetime.datetime.now() - datetime.timedelta(days=day)).date():
                 if day == 0:
                     entry['today'] = entry.get('today') + 1
                 elif day == 1:
                     entry['yesterday'] = entry.get('yesterday') + 1
                 else:
                     entry['2_day_ago'] = entry.get('2_day_ago') + 1
-        if user.activity.date() > (datetime.datetime.today() - datetime.timedelta(days=1)).date():
+        if user.activity.date() > (datetime.datetime.now() - datetime.timedelta(days=1)).date():
             activity += 1
         if user.vip and user.vip_end:
             vips += 1
@@ -813,7 +813,7 @@ async def get_static(clb: CallbackQuery, widget: Button, dialog_manager: DialogM
 
     forms = await session.get_forms()
 
-    text = (f'<b>Статистика на {datetime.datetime.today().strftime('%d-%m-%Y')}</b>\n\nВсего пользователей: {len(users)}'
+    text = (f'<b>Статистика на {datetime.datetime.now().strftime('%d-%m-%Y')}</b>\n\nВсего пользователей: {len(users)}'
             f'\n - Активные пользователи(не заблокировали бота): {active}\n - Пользователей заблокировали '
             f'бота: {len(users) - active}\n - Провзаимодействовали с ботом за последние 24 часа: {activity}\n\n'
             f'<b>Прирост аудитории:</b>\n - За сегодня: +{entry.get("today")}\n - Вчера: +{entry.get("yesterday")}'
@@ -1112,7 +1112,7 @@ async def start_malling(clb: CallbackQuery, widget: Button, dialog_manager: Dial
                 await session.set_active(user.user_id, 0)
         await clb.answer(f'Рассылка прошла успешно, {count} из {len(users)} получили сообщение')
     else:
-        today = datetime.datetime.today()
+        today = datetime.datetime.now()
         date = datetime.datetime(year=today.year, month=today.month, day=today.day, hour=time[0], minute=time[1])
         scheduler.add_job(
             func=send_messages,

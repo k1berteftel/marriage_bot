@@ -1,7 +1,9 @@
+import datetime
 import asyncio
 import logging
 import os
 import inspect
+import pytz
 
 from aiogram import Bot, Dispatcher
 from aiogram_dialog import setup_dialogs
@@ -37,6 +39,12 @@ logging.basicConfig(
     format=format,
     style='{'
 )
+
+
+timezone = pytz.timezone('Europe/Moscow')
+datetime.datetime.now(timezone)
+
+#print(datetime.datetime.today())
 
 
 logger = logging.getLogger(__name__)

@@ -20,6 +20,7 @@ config: Config = load_config()
 user_router = Router()
 
 
+
 @user_router.message(CommandStart())
 async def start_dialog(msg: Message, dialog_manager: DialogManager, session: DataInteraction, translator: Translator, command: CommandObject, scheduler: AsyncIOScheduler):
     job = scheduler.get_job(job_id=f'payment_{msg.from_user.id}')
@@ -84,6 +85,12 @@ async def start_dialog(msg: Message, dialog_manager: DialogManager, session: Dat
         text=translator['hello'],
         reply_markup=get_start_keyboard(translator, admin)
     )
+
+
+#@user_router.message()
+#async def get_geo(msg: Message):
+    #print('longitude = ', msg.location.longitude)
+    #print('latitude = ', msg.location.latitude)
 
 
 @user_router.message(StartDialogFilter('profile_button'))
