@@ -1,3 +1,4 @@
+from aiogram import Bot
 from aiogram.types import CallbackQuery, User, Message, ContentType, InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram_dialog import DialogManager, ShowMode
 from aiogram_dialog.api.entities import MediaAttachment, MediaId
@@ -56,6 +57,25 @@ async def my_requests_getter(event_from_user: User, dialog_manager: DialogManage
     media = None
     if forms:
         form = await session.get_form(forms[page].receiver)
+        form = await session.get_form(forms[page].sender)
+        if not form:
+            scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
+            bot: Bot = dialog_manager.middleware_data.get('bot')
+            message = await bot.send_message(
+                chat_id=event_from_user.id,
+                text=translator['delete_form_warning']
+            )
+            await session.del_request(forms[page].id)
+            job_id = get_random_id()
+            scheduler.add_job(
+                del_message,
+                'interval',
+                args=[message, scheduler, job_id],
+                seconds=7,
+                id=job_id
+            )
+            await dialog_manager.switch_to(requestsSG.start)
+            return
         user = await session.get_user(form.user_id)
         text = translator['form'].format(
                 name=form.name,
@@ -237,6 +257,7 @@ async def confirm_alien_request(clb: CallbackQuery, widget: Button, dialog_manag
 
 async def alien_requests_getter(event_from_user: User, dialog_manager: DialogManager, **kwargs):
     session: DataInteraction = dialog_manager.middleware_data.get('session')
+    bot: Bot = dialog_manager.middleware_data.get('bot')
     translator: Translator = dialog_manager.middleware_data.get('translator')
     forms = await session.get_requests_to_my(event_from_user.id)
     page = dialog_manager.dialog_data.get('page')
@@ -252,6 +273,23 @@ async def alien_requests_getter(event_from_user: User, dialog_manager: DialogMan
     media = None
     if forms:
         form = await session.get_form(forms[page].sender)
+        if not form:
+            scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
+            message = await bot.send_message(
+                chat_id=event_from_user.id,
+                text=translator['delete_form_warning']
+            )
+            await session.del_request(forms[page].id)
+            job_id = get_random_id()
+            scheduler.add_job(
+                del_message,
+                'interval',
+                args=[message, scheduler, job_id],
+                seconds=7,
+                id=job_id
+            )
+            await dialog_manager.switch_to(requestsSG.start)
+            return
         user = await session.get_user(form.user_id)
         text = translator['form'].format(
                 name=form.name,
