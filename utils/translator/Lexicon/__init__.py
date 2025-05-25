@@ -1,4 +1,4 @@
-from utils.translator.Lexicon import ru, en, tr
+from utils.translator.Lexicon import ru, en
 # Другие импорты словарей языков
 
 
