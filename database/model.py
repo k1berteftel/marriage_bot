@@ -1,6 +1,6 @@
 from typing import List
 from datetime import datetime
-from sqlalchemy import BigInteger, VARCHAR, ForeignKey, DateTime, Boolean, Column, Integer, String, ARRAY
+from sqlalchemy import BigInteger, VARCHAR, ForeignKey, DateTime, Boolean, Column, Integer, String, ARRAY, Float, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship, DeclarativeBase
 from sqlalchemy.ext.asyncio import AsyncAttrs
 
@@ -22,13 +22,13 @@ class UsersTable(Base):
     vip: Mapped[bool] = mapped_column(Boolean, default=False)
     super_vip: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=None, nullable=True)
     vip_end: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=None, nullable=True)
-    entry: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
+    entry: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=func.now())
     locale: Mapped[str] = mapped_column(VARCHAR, nullable=True)
     referral: Mapped[int] = mapped_column(BigInteger, nullable=True, default=None)  # реферал
     refs: Mapped[int] = mapped_column(BigInteger, default=0)  # Кол-во зашедших рефералов
     income: Mapped[int] = mapped_column(Integer, default=0)  # Общий доход с рефералов
     active: Mapped[int] = mapped_column(Integer, default=1)
-    activity: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
+    activity: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=func.now())
     block: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
@@ -37,11 +37,12 @@ class FormTable(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
 
-    user_id: Mapped[int] = mapped_column(ForeignKey('users.user_id'))
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.user_id'), unique=True)
     name: Mapped[str] = mapped_column(VARCHAR)
     male: Mapped[str] = mapped_column(VARCHAR)
     age: Mapped[int] = mapped_column(Integer)
     city: Mapped[str] = mapped_column(VARCHAR)
+    location: Mapped["LocationTable"] = relationship('LocationTable', lazy="selectin", cascade='delete', uselist=False)
     profession: Mapped[str] = mapped_column(String)
     education: Mapped[str] = mapped_column(VARCHAR)
     income: Mapped[str] = mapped_column(VARCHAR)
@@ -57,6 +58,16 @@ class FormTable(Base):
     boost: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=None, nullable=True)
 
 
+class LocationTable(Base):
+    __tablename__ = 'location'
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True, autoincrement=True)
+
+    user_id: Mapped[int] = mapped_column(ForeignKey('forms.user_id'))
+    longitude: Mapped[float] = mapped_column(Float)
+    latitude: Mapped[float] = mapped_column(Float)
+
+
 class WatchesTable(Base):
     __tablename__ = 'watches'
 
@@ -64,7 +75,7 @@ class WatchesTable(Base):
 
     user_id: Mapped[int] = mapped_column(BigInteger)
     form_id: Mapped[int] = mapped_column(BigInteger)
-    view: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
+    view: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=func.now())
 
 
 class TransactionsTable(Base):
@@ -75,7 +86,7 @@ class TransactionsTable(Base):
     user_id: Mapped[int] = mapped_column(BigInteger)
     sum: Mapped[int] = mapped_column(Integer)
     description: Mapped[str] = mapped_column(String, nullable=True)
-    create: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=datetime.now())
+    create: Mapped[datetime] = mapped_column(DateTime(timezone=False), default=func.now())
 
 
 class RequestsTable(Base):

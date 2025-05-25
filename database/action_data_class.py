@@ -6,7 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 from database.model import (UsersTable, FormTable, TransactionsTable, RequestsTable,
                             DeeplinksTable, OneTimeLinksIdsTable, AdminsTable, ComplainsTable,
                             ImpressionsModelTable, UserImpressionsTable, WatchesTable, OpTable,
-                            RatesTable, ApplicationsTable)
+                            RatesTable, ApplicationsTable, LocationTable)
 
 from dateutil.relativedelta import relativedelta
 from utils.translator import Translator as create_translator
@@ -92,7 +92,7 @@ class DataInteraction():
 
     async def add_form(
             self, user_id: int, name: str, male: str, age: int,
-            city: str, profession: str, education: str, income: str, description: str,
+            city: str, location: list, profession: str, education: str, income: str, description: str,
             religion: str, family: str, children_count: str|int, children: str, leave: str, second_wife: int | None=None
     ):
         if not await self.get_form(user_id):
@@ -114,6 +114,12 @@ class DataInteraction():
                     leave=leave,
                     second_wife=second_wife
                 ))
+                model = LocationTable(
+                    user_id=user_id,
+                    longitude=location[0],
+                    latitude=location[1]
+                )
+                session.add(model)
                 await session.commit()
         else:
             async with self._sessions() as session:
@@ -133,6 +139,10 @@ class DataInteraction():
                     children=children,
                     leave=leave,
                     second_wife=second_wife,
+                ))
+                await session.execute(update(LocationTable).where(LocationTable.user_id == user_id).values(
+                    longitude=location[0],
+                    latitude=location[1]
                 ))
                 await session.commit()
 
@@ -372,6 +382,26 @@ class DataInteraction():
             await session.execute(update(FormTable).where(FormTable.user_id == user_id).values(
                 kwargs
             ))
+            await session.commit()
+
+    async def update_location(self, user_id: int, city: str, location: list[float]):
+        form = await self.get_form(user_id)
+        async with self._sessions() as session:
+            await session.execute(update(FormTable).where(FormTable.user_id == user_id).values(
+                city=city
+            ))
+            if not form.location:
+                model = LocationTable(
+                    user_id=user_id,
+                    longitude=location[0],
+                    latitude=location[1]
+                )
+                session.add(model)
+            else:
+                await session.execute(update(LocationTable).where(LocationTable.user_id == user_id).values(
+                    longitude=location[0],
+                    latitude=location[1]
+                ))
             await session.commit()
 
     async def update_vip(self, user_id: int, vip: bool, vip_end: datetime.datetime | None=None):

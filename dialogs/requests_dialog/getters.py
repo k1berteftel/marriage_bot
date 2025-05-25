@@ -6,6 +6,7 @@ from aiogram_dialog.widgets.kbd import Button, Select
 from aiogram_dialog.widgets.input import ManagedTextInput
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
+from utils.filter_functions import get_distance
 from utils.schedulers import del_message
 from utils.build_ids import get_random_id
 from utils.translator.translator import Translator
@@ -23,7 +24,7 @@ async def start_getter(event_from_user: User, dialog_manager: DialogManager, **k
     return {
         'text': translator['requests'],
         'my_requests': translator['my_requests_button'] + f'({len(my_requests)})',
-        'alien_requests': translator['alien_requests_button'] + f'({len(alien_requests)})'
+            'alien_requests': translator['alien_requests_button'] + f'({len(alien_requests)})'
     }
 
 
@@ -56,7 +57,7 @@ async def my_requests_getter(event_from_user: User, dialog_manager: DialogManage
         not_last = False
     media = None
     if forms:
-        form = await session.get_form(forms[page].receiver)
+        user_form = await session.get_form(forms[page].receiver)
         form = await session.get_form(forms[page].sender)
         if not form:
             scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
@@ -83,6 +84,9 @@ async def my_requests_getter(event_from_user: User, dialog_manager: DialogManage
                 age=form.age,
                 age_text=get_age_text(form.age),
                 city=form.city,
+                distance=get_distance(user_form.location.latitude, user_form.location.longitude,
+                                      form.location.latitude, form.location.longitude) if (
+                        user_form.location and form.location) else "?",
                 profession=form.profession,
                 education=form.education,
                 income=form.income,
@@ -197,12 +201,17 @@ async def confirm_alien_request(clb: CallbackQuery, widget: Button, dialog_manag
                     id=job_id
                 )
                 return
+    sender = await session.get_user(forms[page].sender)
+    send_form = await session.get_form(sender.user_id)
     text = translator['form'].format(
             name=form.name,
             male=form.male,
             age=form.age,
             age_text=get_age_text(form.age),
             city=form.city,
+            distance=get_distance(send_form.location.latitude, sender_form.location.longitude,
+                                  form.location.latitude, form.location.longitude) if (
+                        sender_form.location and form.location) else "?",
             profession=form.profession,
             education=form.education,
             income=form.income,
@@ -218,8 +227,6 @@ async def confirm_alien_request(clb: CallbackQuery, widget: Button, dialog_manag
             leave=form.leave,
             vip='✅' if user.vip else '❌'
         )
-    sender = await session.get_user(forms[page].sender)
-    send_form = await session.get_form(sender.user_id)
     if send_form.male == translator['men_button']:
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[[InlineKeyboardButton(text=translator['get_contact_button'], callback_data=f'get_contact_{clb.from_user.id}')]]
@@ -271,6 +278,7 @@ async def alien_requests_getter(event_from_user: User, dialog_manager: DialogMan
     if len(forms) - 1 <= page:
         not_last = False
     media = None
+    user_form = await session.get_form(event_from_user.id)
     if forms:
         form = await session.get_form(forms[page].sender)
         if not form:
@@ -297,6 +305,9 @@ async def alien_requests_getter(event_from_user: User, dialog_manager: DialogMan
                 male=form.male,
                 age_text=get_age_text(form.age),
                 city=form.city,
+                distance=get_distance(user_form.location.latitude, user_form.location.longitude,
+                                      form.location.latitude, form.location.longitude) if (
+                            user_form.location and form.location) else "?",
                 profession=form.profession,
                 education=form.education,
                 income=form.income,

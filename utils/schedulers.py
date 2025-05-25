@@ -222,7 +222,7 @@ async def del_message(msg: Message, scheduler: AsyncIOScheduler, job_id: str):
     scheduler.remove_job(job_id=job_id)
 
 
-async def send_notification(user_id: int, session: DataInteraction, translator: Translator, bot: Bot):
+async def send_notification(user_id: int, session: DataInteraction, translator: Translator, bot: Bot, scheduler: AsyncIOScheduler):
     keyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [InlineKeyboardButton(text=translator['notification_button'], callback_data='open_ref_menu')]
@@ -230,11 +230,19 @@ async def send_notification(user_id: int, session: DataInteraction, translator: 
     )
     user = await session.get_user(user_id)
     count = random.randint(5, 20)
-    await bot.send_message(
-        chat_id=user_id,
-        text=translator['notification_message'].format(count=count, name=user.name),
-        reply_markup=keyboard
-    )
+    try:
+        await bot.send_message(
+            chat_id=user_id,
+            text=translator['notification_message'].format(count=count, name=user.name),
+            reply_markup=keyboard
+        )
+    except AttributeError as atterr:
+        print(atterr)
+    except Exception:
+        await session.set_active(user_id, 0)
+        job = scheduler.get_job(job_id=f'remind_{user_id}')
+        if job:
+            job.remove()
 
 
 async def start_schedulers(session: DataInteraction, scheduler: AsyncIOScheduler, bot: Bot):

@@ -7,7 +7,7 @@ from aiogram_dialog.widgets.input import ManagedTextInput
 from aiogram.utils.media_group import MediaGroupBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
-from utils.filter_functions import sort_forms
+from utils.filter_functions import sort_forms, get_distance
 from utils.translator.translator import Translator
 from utils.build_ids import get_random_id
 from utils.schedulers import del_message
@@ -60,16 +60,18 @@ async def search_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
             age=form.age,
             age_text=get_age_text(form.age),
             city=form.city,
+            distance=get_distance(user_form.location.latitude, user_form.location.longitude,
+                                  form.location.latitude, form.location.longitude) if (user_form.location and form.location) else "?",
             profession=form.profession,
             education=form.education,
             income=form.income,
             description=form.description,
             religion=form.religion,
             family=form.family,
-        second_wife=translator['second_wife_form_widget'].format(
-            second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator[
-                'add_second_wife_no_button']
-        ) if isinstance(form.second_wife, int) else '',
+            second_wife=translator['second_wife_form_widget'].format(
+                second_wife=translator['add_second_wife_yes_button'] if form.second_wife else translator[
+                    'add_second_wife_no_button']
+            ) if isinstance(form.second_wife, int) else '',
             children_count=form.children_count,
             children=form.children,
             leave=form.leave,
@@ -133,6 +135,9 @@ async def filter_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
             age=form.age,
             age_text=get_age_text(form.age),
             city=form.city,
+            distance=get_distance(user_form.location.latitude, user_form.location.longitude,
+                                  form.location.latitude, form.location.longitude) if (
+                    user_form.location and form.location) else "?",
             profession=form.profession,
             education=form.education,
             income=form.income,

@@ -41,7 +41,7 @@ class RemindMiddleware(BaseMiddleware):
             scheduler.add_job(
                 send_notification,
                 'interval',
-                args=[user.id, session, translator, bot],
+                args=[user.id, session, translator, bot, scheduler],
                 days=3,
                 id=f'remind_{user.id}'
             )

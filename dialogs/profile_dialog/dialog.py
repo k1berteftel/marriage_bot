@@ -98,6 +98,10 @@ profile_dialog = Dialog(
     ),
     Window(
         Format('{text}'),
+        MessageInput(
+            getters.get_city_coordinates,
+            content_types=ContentType.LOCATION
+        ),
         TextInput(
             id='get_city',
             on_success=getters.get_city

@@ -29,11 +29,17 @@ class NatsConfig:
 
 
 @dataclass
+class Yandex:
+    api_key: str
+
+
+@dataclass
 class Config:
     bot: tg_bot
     db: DB
     payment: Payment
     nats: NatsConfig
+    yandex: Yandex
 
 
 def load_config(path: str | None = None) -> Config:
@@ -53,5 +59,8 @@ def load_config(path: str | None = None) -> Config:
         ),
         nats=NatsConfig(
             servers=env.list('nats')
+        ),
+        yandex=Yandex(
+            api_key=env('yandex_key')
         )
     )

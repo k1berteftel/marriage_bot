@@ -704,6 +704,7 @@ async def complain_menu_getter(event_from_user: User, dialog_manager: DialogMana
                 male=form.male,
                 age_text=get_age_text(form.age),
                 city=form.city,
+                distance="?",
                 profession=form.profession,
                 education=form.education,
                 income=form.income,

@@ -7,7 +7,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 
-from utils.filter_functions import sort_forms
+from utils.filter_functions import sort_forms, get_distance
 from utils.build_ids import get_random_id
 from utils.schedulers import del_message
 from keyboard.keyboards import get_search_keyboard, get_basic_search_keyboard
@@ -24,6 +24,7 @@ search_router = Router()
 async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translator, session: DataInteraction, scheduler: AsyncIOScheduler):
     data = await state.get_data()
     forms = data.get('forms')
+    user_form = await session.get_form(clb.from_user.id)
     if not forms:
         if data.get('filter'):
             keyboard = await get_basic_search_keyboard(translator)
@@ -43,7 +44,6 @@ async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translato
                 id=job_id
             )
             return
-        user_form = await session.get_form(clb.from_user.id)
         forms = await sort_forms(forms, session, user_form.age)
     form = await session.get_form_by_id(forms[0])
     forms.pop(0)
@@ -55,6 +55,9 @@ async def next_form(clb: CallbackQuery, state: FSMContext, translator: Translato
             age=form.age,
             age_text=get_age_text(form.age),
             city=form.city,
+            distance=get_distance(user_form.location.latitude, user_form.location.longitude,
+                                  form.location.latitude, form.location.longitude) if (
+                    user_form.location and form.location) else "?",
             profession=form.profession,
             education=form.education,
             income=form.income,
@@ -161,6 +164,7 @@ async def back_search(clb: CallbackQuery, state: FSMContext, translator: Transla
 @search_router.callback_query(F.data.startswith("get_contact"))
 async def send_contact(clb: CallbackQuery, session: DataInteraction, translator, scheduler: AsyncIOScheduler):
     user_id = int(clb.data.split('_')[-1])
+    user_form = await session.get_form(user_id)
     user = await session.get_user(clb.from_user.id)
     form = await session.get_form(clb.from_user.id)
     price = 0
@@ -197,6 +201,9 @@ async def send_contact(clb: CallbackQuery, session: DataInteraction, translator,
             age=form.age,
             age_text=get_age_text(form.age),
             city=form.city,
+            distance=get_distance(user_form.location.latitude, user_form.location.longitude,
+                                  form.location.latitude, form.location.longitude) if (
+                    user_form.location and form.location) else "?",
             profession=form.profession,
             education=form.education,
             income=form.income,

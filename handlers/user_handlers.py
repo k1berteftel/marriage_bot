@@ -20,7 +20,6 @@ config: Config = load_config()
 user_router = Router()
 
 
-
 @user_router.message(CommandStart())
 async def start_dialog(msg: Message, dialog_manager: DialogManager, session: DataInteraction, translator: Translator, command: CommandObject, scheduler: AsyncIOScheduler):
     job = scheduler.get_job(job_id=f'payment_{msg.from_user.id}')
@@ -282,6 +281,7 @@ async def get_verification_note(msg: Message, state: FSMContext, session: DataIn
             age=form.age,
             age_text=get_age_text(form.age),
             city=form.city,
+            distance="?",
             profession=form.profession,
             education=form.education,
             income=form.income,

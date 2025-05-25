@@ -4,7 +4,7 @@ from typing import Any, Awaitable, Callable, Dict
 from aiogram import BaseMiddleware, Bot
 from aiogram.types import TelegramObject, User
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
-from sqlalchemy import select
+from sqlalchemy import select, update
 from cachetools import TTLCache
 
 from database.action_data_class import DataInteraction
@@ -31,7 +31,7 @@ class BlockMiddleware(BaseMiddleware):
         data: Dict[str, Any]
     ) -> Any:
         event_from_user: User = data.get('event_from_user')
-        if event_from_user.id not in self.cache:
+        if event_from_user.id not in list(self.cache.keys()):
             sessions: async_sessionmaker = data.get('_session')
             async with sessions() as session:
                 user = await session.scalar(select(UsersTable).where(UsersTable.user_id == event_from_user.id))
@@ -43,5 +43,11 @@ class BlockMiddleware(BaseMiddleware):
             user = self.cache.get(event_from_user.id)
         if user.block:
             return
+        if user.username != event_from_user.username:
+            sessions: async_sessionmaker = data.get('_session')
+            async with sessions() as session:
+                await session.execute(update(UsersTable).where(UsersTable.user_id == event_from_user.id).values(
+                    username=event_from_user.username
+                ))
         data['cache'] = self.cache
         return await handler(event, data)

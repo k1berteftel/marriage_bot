@@ -7,6 +7,7 @@ from aiogram.utils.media_group import MediaGroupBuilder
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from keyboard.keyboards import get_check_photo_keyboard
+from utils.geo import get_geo, get_city as get_city_by_geo
 from utils.translator.translator import Translator
 from utils.text_utils import get_age_text
 from utils.build_ids import get_random_id
@@ -118,6 +119,7 @@ async def form_menu_getter(event_from_user: User, dialog_manager: DialogManager,
             age=form.age,
             age_text=get_age_text(form.age),
             city=form.city,
+            distance="?",
             profession=form.profession,
             education=form.education,
             income=form.income,
@@ -256,10 +258,17 @@ async def get_city_getter(dialog_manager: DialogManager, **kwargs):
 
 
 async def get_city(msg: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str):
-    if len(text) > 30:
-        translator: Translator = dialog_manager.middleware_data.get('translator')
-        scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
-        message = await msg.answer(text=translator['add_city_error'])
+    await msg.delete()
+    scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    user = await session.get_user(msg.from_user.id)
+    locale = user.locale
+    if not locale:
+        locale = 'ru'
+    result = await get_geo(text, locale)
+    if not result:
+        message = await msg.answer(text=translator['add_city_name_error'])
         job_id = get_random_id()
         scheduler.add_job(
             del_message,
@@ -268,10 +277,41 @@ async def get_city(msg: Message, widget: ManagedTextInput, dialog_manager: Dialo
             seconds=7,
             id=job_id
         )
+        try:
+            await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=msg.message_id - 1)
+        except Exception:
+            ...
         return
-    session: DataInteraction = dialog_manager.middleware_data.get('session')
-    await session.update_form(msg.from_user.id, city=text)
+    await session.update_location(msg.from_user.id, result[0], result[1])
+    await dialog_manager.switch_to(profileSG.form_menu, show_mode=ShowMode.EDIT)
+
+
+async def get_city_coordinates(msg: Message, widget: MessageInput, dialog_manager: DialogManager):
     await msg.delete()
+    scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    user = await session.get_user(msg.from_user.id)
+    locale = user.locale
+    if not locale:
+        locale = 'ru'
+    result = await get_city_by_geo(msg.location.longitude, msg.location.latitude, locale)
+    if not result:
+        message = await msg.answer(text=translator['add_city_geo_error'])
+        job_id = get_random_id()
+        scheduler.add_job(
+            del_message,
+            'interval',
+            args=[message, scheduler, job_id],
+            seconds=7,
+            id=job_id
+        )
+        try:
+            await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=msg.message_id - 1)
+        except Exception:
+            ...
+        return
+    await session.update_location(msg.from_user.id, result[0], result[1])
     await dialog_manager.switch_to(profileSG.form_menu, show_mode=ShowMode.EDIT)
 
 
@@ -609,6 +649,7 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
                 age=form.age,
                 age_text=get_age_text(form.age),
                 city=form.city,
+                distance="?",
                 profession=form.profession,
                 education=form.education,
                 income=form.income,
@@ -685,6 +726,7 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
                 age=form.age,
                 age_text=get_age_text(form.age),
                 city=form.city,
+                distance="?",
                 profession=form.profession,
                 education=form.education,
                 income=form.income,

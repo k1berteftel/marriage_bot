@@ -11,6 +11,7 @@ from keyboard.keyboards import get_start_keyboard, get_check_photo_keyboard, get
 from utils.translator.translator import Translator
 from utils.schedulers import del_message
 from utils.text_utils import get_age_text
+from utils.geo import get_geo, get_city as get_city_by_geo
 from utils.build_ids import get_random_id
 from database.action_data_class import DataInteraction
 from config_data.config import load_config, Config
@@ -128,11 +129,17 @@ async def get_city_getter(dialog_manager: DialogManager, **kwargs):
 
 
 async def get_city(msg: Message, widget: ManagedTextInput, dialog_manager: DialogManager, text: str):
-    if len(text) > 30:
-        await msg.delete()
-        scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
-        translator: Translator = dialog_manager.middleware_data.get('translator')
-        message = await msg.answer(text=translator['add_city_error'])
+    await msg.delete()
+    scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    user = await session.get_user(msg.from_user.id)
+    locale = user.locale
+    if not locale:
+        locale = 'ru'
+    result = await get_geo(text, locale)
+    if not result:
+        message = await msg.answer(text=translator['add_city_name_error'])
         job_id = get_random_id()
         scheduler.add_job(
             del_message,
@@ -146,8 +153,39 @@ async def get_city(msg: Message, widget: ManagedTextInput, dialog_manager: Dialo
         except Exception:
             ...
         return
-    dialog_manager.dialog_data['city'] = text[0].upper() + text[1::]
+    print(result)
+    dialog_manager.dialog_data['city'] = result[0]
+    dialog_manager.dialog_data['coordinates'] = result[1]
+    await dialog_manager.switch_to(formSG.get_profession, show_mode=ShowMode.DELETE_AND_SEND)
+
+
+async def get_city_coordinates(msg: Message, widget: MessageInput, dialog_manager: DialogManager):
     await msg.delete()
+    scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
+    translator: Translator = dialog_manager.middleware_data.get('translator')
+    session: DataInteraction = dialog_manager.middleware_data.get('session')
+    user = await session.get_user(msg.from_user.id)
+    locale = user.locale
+    if not locale:
+        locale = 'ru'
+    result = await get_city_by_geo(msg.location.longitude, msg.location.latitude, locale)
+    if not result:
+        message = await msg.answer(text=translator['add_city_geo_error'])
+        job_id = get_random_id()
+        scheduler.add_job(
+            del_message,
+            'interval',
+            args=[message, scheduler, job_id],
+            seconds=7,
+            id=job_id
+        )
+        try:
+            await msg.bot.delete_message(chat_id=msg.from_user.id, message_id=msg.message_id - 1)
+        except Exception:
+            ...
+        return
+    dialog_manager.dialog_data['city'] = result[0]
+    dialog_manager.dialog_data['coordinates'] = result[1]
     await dialog_manager.switch_to(formSG.get_profession, show_mode=ShowMode.DELETE_AND_SEND)
 
 
@@ -486,6 +524,7 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
     age = dialog_manager.dialog_data.get('age')
     male = dialog_manager.dialog_data.get('male')
     city = dialog_manager.dialog_data.get('city')
+    location = dialog_manager.dialog_data.get('coordinates')
     profession = dialog_manager.dialog_data.get('profession')
     education = dialog_manager.dialog_data.get('education')
     income = dialog_manager.dialog_data.get('income')
@@ -503,6 +542,7 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
         age=age,
         male=male,
         city=city,
+        location=location,
         profession=profession,
         education=education,
         income=income,
@@ -537,6 +577,7 @@ async def get_photo_3(msg: Message, widget: MessageInput, dialog_manager: Dialog
                 age=form.age,
                 age_text=get_age_text(form.age),
                 city=form.city,
+                distance="?",
                 profession=form.profession,
                 education=form.education,
                 income=form.income,
@@ -613,6 +654,7 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
     age = dialog_manager.dialog_data.get('age')
     male = dialog_manager.dialog_data.get('male')
     city = dialog_manager.dialog_data.get('city')
+    location = dialog_manager.dialog_data.get('coordinates')
     profession = dialog_manager.dialog_data.get('profession')
     education = dialog_manager.dialog_data.get('education')
     income = dialog_manager.dialog_data.get('income')
@@ -630,6 +672,7 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
         age=age,
         male=male,
         city=city,
+        location=location,
         profession=profession,
         education=education,
         income=income,
@@ -667,6 +710,7 @@ async def skip_get_photos(clb: CallbackQuery, widget: Button, dialog_manager: Di
                 age=form.age,
                 age_text=get_age_text(form.age),
                 city=form.city,
+                distance="?",
                 profession=form.profession,
                 education=form.education,
                 income=form.income,
