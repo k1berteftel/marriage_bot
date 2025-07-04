@@ -209,9 +209,9 @@ async def confirm_alien_request(clb: CallbackQuery, widget: Button, dialog_manag
             age=form.age,
             age_text=get_age_text(form.age),
             city=form.city,
-            distance=get_distance(send_form.location.latitude, sender_form.location.longitude,
+            distance=get_distance(send_form.location.latitude, send_form.location.longitude,
                                   form.location.latitude, form.location.longitude) if (
-                        sender_form.location and form.location) else "?",
+                        send_form.location and form.location) else "?",
             profession=form.profession,
             education=form.education,
             income=form.income,
