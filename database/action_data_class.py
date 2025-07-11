@@ -455,6 +455,8 @@ class DataInteraction():
             await session.commit()
 
     async def set_active(self, user_id: int, active: int):
+        if not active:
+            await self.set_form_active(user_id, False)
         async with self._sessions() as session:
             await session.execute(update(UsersTable).where(UsersTable.user_id == user_id).values(
                 active=active

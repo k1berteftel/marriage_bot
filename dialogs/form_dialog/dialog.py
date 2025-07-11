@@ -1,9 +1,10 @@
 from aiogram.types import ContentType
 from aiogram_dialog import Dialog, Window
-from aiogram_dialog.widgets.kbd import SwitchTo, Column, Row, Button, Group, Select, Start, Url
+from aiogram_dialog.widgets.kbd import SwitchTo, Column, Row, Button, Group, Select, Start, Url, RequestLocation
 from aiogram_dialog.widgets.text import Format, Const
 from aiogram_dialog.widgets.input import TextInput, MessageInput
 from aiogram_dialog.widgets.media import DynamicMedia
+from aiogram_dialog.widgets.markup.reply_keyboard import ReplyKeyboardFactory
 
 from dialogs.form_dialog import getters
 
@@ -50,7 +51,12 @@ form_dialog = Dialog(
             id='get_city',
             on_success=getters.get_city
         ),
+        RequestLocation(Format('{request}')),
         SwitchTo(Format('{back}'), id='back_get_male', state=formSG.get_male),
+        markup_factory=ReplyKeyboardFactory(
+            #input_field_placeholder=Format("{event.from_user.username}"),
+            resize_keyboard=True,
+        ),
         getter=getters.get_city_getter,
         state=formSG.get_city
     ),

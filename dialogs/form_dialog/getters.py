@@ -124,6 +124,7 @@ async def get_city_getter(dialog_manager: DialogManager, **kwargs):
     translator: Translator = dialog_manager.middleware_data.get('translator')
     return {
         'text': translator['add_city'],
+        'request': translator['location_request_button'],
         'back': translator['back']
     }
 

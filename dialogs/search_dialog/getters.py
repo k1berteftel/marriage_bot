@@ -31,11 +31,22 @@ async def search_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
     session: DataInteraction = dialog_manager.middleware_data.get('session')
     translator: Translator = dialog_manager.middleware_data.get('translator')
     state: FSMContext = dialog_manager.middleware_data.get('state')
+    scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
+    user_form = await session.get_form(clb.from_user.id)
+    if not user_form.location:
+        message = await clb.message.answer(translator['no_location_warning'])
+        job_id = get_random_id()
+        scheduler.add_job(
+            del_message,
+            'interval',
+            args=[message, scheduler, job_id],
+            seconds=7,
+            id=job_id
+        )
     forms = await session.filter_forms(clb.from_user.id)
     if not forms:
         forms = await session.filter_forms(user_id=clb.from_user.id, counter=4)
     if not forms:
-        scheduler: AsyncIOScheduler = dialog_manager.middleware_data.get('scheduler')
         message = await clb.message.answer(translator['form_error'])
         job_id = get_random_id()
         scheduler.add_job(
@@ -47,7 +58,6 @@ async def search_forms(clb: CallbackQuery, widget: Button, dialog_manager: Dialo
         )
         await dialog_manager.switch_to(searchSG.start, show_mode=ShowMode.DELETE_AND_SEND)
         return
-    user_form = await session.get_form(clb.from_user.id)
     forms = await sort_forms(forms, session, user_form.age)
     form = await session.get_form_by_id(forms[0])
     forms.pop(0)

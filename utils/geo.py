@@ -47,7 +47,7 @@ def _get_current_geo_data(data: dict) -> list | None:
     components = objects[0]['GeoObject']['metaDataProperty']['GeocoderMetaData']['Address']['Components']
     name = ''
     for component in components:
-        if component['kind'] == 'locality':
+        if component['kind'] == 'locality' or component['kind'] == 'province':
             name = component['name']
     if not name:
         return None
