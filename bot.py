@@ -25,6 +25,7 @@ from handlers.payment_handlers import payment_router
 from dialogs import get_dialogs
 from middlewares import (BlockMiddleware, TransferObjectsMiddleware, RemindMiddleware,
                          OpMiddleware, ImpressionsMiddleware, SupportMiddleware)
+from utils.remake_funcs import change_users_location
 
 
 module_path = inspect.getfile(inspect.currentframe())
@@ -54,8 +55,8 @@ config: Config = load_config()
 
 async def main():
     database = PostgresBuild(config.db.dns)
-    await database.drop_tables(Base)
-    await database.create_tables(Base)
+    #await database.drop_tables(Base)
+    #await database.create_tables(Base)
     session = database.session()
 
     scheduler: AsyncIOScheduler = AsyncIOScheduler()
@@ -66,6 +67,7 @@ async def main():
 
     bot = Bot(token=config.bot.token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
+    await change_users_location(DataInteraction(session))
     await start_schedulers(DataInteraction(session), scheduler, bot)
 
     dp = Dispatcher()  # storage=storage
