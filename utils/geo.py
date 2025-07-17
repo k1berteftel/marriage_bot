@@ -1,5 +1,4 @@
-import aiohttp
-from aiohttp import ClientSession
+from dadata import DadataAsync
 
 from config_data.config import Config, load_config
 
@@ -7,48 +6,41 @@ from config_data.config import Config, load_config
 config: Config = load_config()
 
 
-async def get_city(longitude: float, latitude: float, locale: str | None) -> list | None:
-    async with ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as client:
-        params = {
-            'apikey': config.yandex.api_key,
-            'geocode': f'{longitude}, {latitude}',
-            'kind': 'locality',
-            'format': 'json',
-            'lang': 'ru_RU' if (locale == 'ru' or not locale) else 'en_RU'
-        }
-        url = f'https://geocode-maps.yandex.ru/v1/'
-        async with client.get(url=url, params=params) as resp:
-            print(await resp.json())
-            data = await resp.json()
-    return _get_current_geo_data(data)
-
-
-async def get_geo(city: str, locale: str):
-    async with ClientSession(connector=aiohttp.TCPConnector(ssl=False)) as client:
-        params = {
-            'apikey': config.yandex.api_key,
-            'geocode': city,
-            'kind': 'locality',
-            'format': 'json',
-            'lang': 'ru_RU' if (locale == 'ru' or not locale) else 'en_RU'
-        }
-        url = f'https://geocode-maps.yandex.ru/v1/'
-        async with client.get(url=url, params=params) as resp:
-            print(await resp.json())
-            data = await resp.json()
-    return _get_current_geo_data(data)
-
-
-def _get_current_geo_data(data: dict) -> list | None:
-    objects = data['response']['GeoObjectCollection'].get('featureMember')
-    if not objects:
+async def get_city(longitude: float, latitude: float) -> list | None:
+    dadata = DadataAsync(config.geolocator.api_key, config.geolocator.api_secret)
+    result = await dadata.geolocate('address', lat=latitude, lon=longitude)
+    print(result)
+    if not result:
         return None
-    point = objects[0]['GeoObject']['Point'].get('pos').split(' ')
-    components = objects[0]['GeoObject']['metaDataProperty']['GeocoderMetaData']['Address']['Components']
-    name = ''
-    for component in components:
-        if component['kind'] == 'locality' or component['kind'] == 'province':
-            name = component['name']
-    if not name:
+    data = result[0].get('data')
+    if data.get('region_type_full') == 'город':
+        city = data.get('region')
+    elif data.get('settlement_type_full') == 'село':
+        city = data.get('settlement')
+    else:
+        city = data.get('city')
+    latitude = data.get('geo_lat')
+    longitude = data.get('geo_lon')
+    if not city or not latitude or not longitude:
         return None
-    return [name, [float(point[0]), float(point[1])]]
+    return [city, [longitude, latitude]]
+
+
+async def get_geo(city: str):
+    dadata = DadataAsync(config.geolocator.api_key, config.geolocator.api_secret)
+    result = await dadata.clean('address', city)
+    if result.get('region_type_full') == 'город':
+        city = result.get('region')
+    elif result.get('settlement_type_full') == 'село':
+        city = result.get('settlement')
+    else:
+        city = result.get('city')
+    latitude = result.get('geo_lat')
+    longitude = result.get('geo_lon')
+    if not city or not latitude or not longitude:
+        return None
+    return [city, [longitude, latitude]]
+
+
+
+

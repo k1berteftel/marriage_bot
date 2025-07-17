@@ -11,7 +11,7 @@ async def change_users_location(session: DataInteraction):
             continue
         if not form.location:
             try:
-                result = await get_geo(form.city, user.locale)
+                result = await get_geo(form.city)
                 if not result:
                     continue
             except Exception:

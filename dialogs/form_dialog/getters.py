@@ -138,7 +138,7 @@ async def get_city(msg: Message, widget: ManagedTextInput, dialog_manager: Dialo
     locale = user.locale
     if not locale:
         locale = 'ru'
-    result = await get_geo(text, locale)
+    result = await get_geo(text)
     if not result:
         message = await msg.answer(text=translator['add_city_name_error'])
         job_id = get_random_id()
@@ -169,7 +169,7 @@ async def get_city_coordinates(msg: Message, widget: MessageInput, dialog_manage
     locale = user.locale
     if not locale:
         locale = 'ru'
-    result = await get_city_by_geo(msg.location.longitude, msg.location.latitude, locale)
+    result = await get_city_by_geo(msg.location.longitude, msg.location.latitude)
     if not result:
         message = await msg.answer(text=translator['add_city_geo_error'])
         job_id = get_random_id()

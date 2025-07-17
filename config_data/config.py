@@ -29,8 +29,9 @@ class NatsConfig:
 
 
 @dataclass
-class Yandex:
+class Dadata:
     api_key: str
+    api_secret: str
 
 
 @dataclass
@@ -39,7 +40,7 @@ class Config:
     db: DB
     payment: Payment
     nats: NatsConfig
-    yandex: Yandex
+    geolocator: Dadata
 
 
 def load_config(path: str | None = None) -> Config:
@@ -60,7 +61,8 @@ def load_config(path: str | None = None) -> Config:
         nats=NatsConfig(
             servers=env.list('nats')
         ),
-        yandex=Yandex(
-            api_key=env('yandex_key')
+        geolocator=Dadata(
+            api_key=env('dadata_key'),
+            api_secret=env('dadata_secret')
         )
     )
